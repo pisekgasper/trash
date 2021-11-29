@@ -1,0 +1,15 @@
+:root {
+    --primary-color: #5ae9bb;
+    --font-color: #0D0D0D;
+    --bg-color: #4D8F5F;
+    --bg-secondary-color: #F0D792;
+}
+
+button {
+    height: min-content !important;
+    padding: 0 20px;
+    background-color: var(--font-color) !important;
+    color: white;
+    border-color: var(--font-color);
+    cursor: pointer;
+}

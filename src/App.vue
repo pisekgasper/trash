@@ -3,16 +3,19 @@
     <router-link to="/">Home</router-link>
     <router-link to="/about">About</router-link>
   </div>
-  <router-view />
+  <router-viev />
 </template>
 
 <style lang="scss">
+@import "./assets/css/reset.css";
+@import "./assets/css/global.css";
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: var(--font-color);
 }
 
 #nav {
@@ -20,10 +23,10 @@
 
   a {
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--font-color);
 
     &.router-link-exact-active {
-      color: #42b983;
+      color: var(--primary-color);
     }
   }
 }
