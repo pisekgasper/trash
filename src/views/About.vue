@@ -7,7 +7,7 @@
     <div class="spinner-container">
       <trash-spinner v-if="loading"></trash-spinner>
     </div>
-    <div class="container-table100">
+    <div class="container-table100" v-if="!loading">
       <div class="wrap-table100">
         <div class="table100">
           <table>
@@ -42,7 +42,7 @@
 
 <script>
 import http from "../http-common";
-import TrashSpinner from "../components/TrashSpinner.vue"
+import TrashSpinner from "../components/TrashSpinner.vue";
 
 export default {
   components: {
@@ -68,7 +68,10 @@ export default {
       const tbl = param
         .substring(param.toUpperCase().indexOf("FROM") + 5)
         .split(" ")[0];
-      const columnNames = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tbl + "' ORDER BY ORDINAL_POSITION";
+      const columnNames =
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" +
+        tbl +
+        "' ORDER BY ORDINAL_POSITION";
       http
         .get("/trash", { params: { q: columnNames } })
         .then((response) => {
@@ -103,7 +106,9 @@ export default {
             let td = trs[i].querySelectorAll("td")[j];
             if (td != null) {
               let span = document.createElement("span");
-              span.innerHTML = Object.assign({}, this.tableHeaders[j])["column_name"];
+              span.innerHTML = Object.assign({}, this.tableHeaders[j])[
+                "column_name"
+              ];
               span.style.float = "left";
               span.style.paddingLeft = "15px";
               td.parentNode.insertBefore(span, td);

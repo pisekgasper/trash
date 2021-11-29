@@ -8,6 +8,8 @@ from time import gmtime, strftime
 
 register_adapter(np.int64, AsIs)
 
+# lokacije v lon, lat, google api 
+
 # connect to db
 path = "C:/Users/Nik/Documents/fri/3. letnik/MT/Modul1-podatki/EVL2021.xlsx"
 sheet = "Export Worksheet"
