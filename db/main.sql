@@ -42,3 +42,14 @@ CREATE TABLE evl (
     evl_status varchar(100),
     ind_sprejeto boolean
 );
+
+CREATE TABLE obcine (
+    id bigint PRIMARY KEY,
+    name text NOT NULL
+);
+
+CREATE TABLE naselja (
+    id bigint PRIMARY KEY,
+    name text NOT NULL,
+    o_id bigint NOT NULL
+);
