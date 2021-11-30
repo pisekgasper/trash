@@ -1,69 +1,93 @@
 <template>
-	<div id="map">
-		ss
-		<canvas id="map-canvas"></canvas>
-	</div>
+	<!--<canvas id="map-canvas" width="960" height="600"></canvas>-->
+	<svg id="map-svg" width="960" height="600"></svg>
 </template>
 
 <script>
 	import * as d3 from 'd3';
+	import * as topojson from 'topojson';
 	import geoJsonSVN from '../assets/geojson/svn.json';
 	import geoJsonSVNRegional from '../assets/geojson/svn_regional.json';
+	import geoJsonOB from '../assets/geojson/OB_topo.json';
 
 	console.log(geoJsonSVN);
 	console.log(geoJsonSVNRegional);
+	console.log(geoJsonOB);
 	console.log(d3);
 
 	export default {
-		data() {},
-		created() {
-			this.createMap();
+		data() {
+			return {};
 		},
-		methods: {
-			createMap() {
-				var canvas = document.getElementById('map-canvas');
+		mounted() {
+			/*let canvas = document.getElementById('map-canvas');
+			let width = canvas.offsetWidth;
+			let height = canvas.offsetHeight;*/
+			console.log(
+				topojson.feature(geoJsonOB, geoJsonOB.objects.regions).features
+			);
+			var svg = d3.select('#map-svg');
+			let width = 960;
+			let height = 720;
 
-				// Actual width and height. No idea if clienWidth would be a better option..?
-				var width = canvas.offsetWidth;
-				var height = canvas.offsetHeight;
+			var geoData = topojson.feature(geoJsonOB, geoJsonOB.objects.regions);
 
-				// Set a projection for the map. Projection = transform a lat/long on a position on the 2d map.
-				var projection = d3
-					.geoNaturalEarth1()
-					.scale(width / 1.3 / Math.PI)
-					.translate([width / 2, height / 2]);
+			var projection = d3
+				.geoIdentity()
+				.reflectY(true)
+				.fitSize([width, height], geoData);
 
-				// Get the 'context'
-				var ctx = canvas.getContext('2d');
+			var path = d3.geoPath().projection(projection);
 
-				// geographic path generator for given projection and canvas context
-				const pathGenerator = d3.geoPath(projection, ctx);
+			svg.append('path').datum(geoData).attr('d', path);
 
-				// Draw a background
-				// ctx.fillStyle = '#ddd';
-				// ctx.fillRect(0, 0, width, height);
+			/*var projection = d3
+				.geoMercator()
+				.scale(100)
+				.center([0, 70])
+				.translate([width / 2, height / 2]);
 
-				// initialize the path
-				ctx.beginPath();
+			var ctx = canvas.getContext('2d');
+			const pathGenerator = d3.geoPath(projection, ctx);
 
-				// Got the positions of the path
-				pathGenerator(geoJsonSVN);
+			ctx.fillStyle = 'yellow';
+			ctx.fillRect(0, 0, width, height);
 
-				// Fill the paths
-				ctx.fillStyle = '#999';
-				ctx.fill();
+			ctx.beginPath();
+			pathGenerator(geoJsonSVNRegional);
 
-				// Add stroke
-				ctx.strokeStyle = '#69b3a2';
-				ctx.stroke();
-			},
+			ctx.fillStyle = 'red';
+			ctx.fill;
+
+			ctx.strokeStyle = '#69b3a2';
+			ctx.stroke();*/
 		},
+		methods: {},
 	};
 </script>
 
 <style lang="scss" scoped>
-	#map {
-		margin: auto;
-		width: 100%;
+	.regions {
+		fill: red;
+	}
+	.regional-borders {
+		fill: none;
+		stroke: green;
+		stroke-width: 0.5px;
+		stroke-linejoin: round;
+		stroke-linecap: round;
+		pointer-events: none;
+	}
+	.states :hover {
+		fill: red;
+	}
+
+	.state-borders {
+		fill: none;
+		stroke: #fff;
+		stroke-width: 0.5px;
+		stroke-linejoin: round;
+		stroke-linecap: round;
+		pointer-events: none;
 	}
 </style>
