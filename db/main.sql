@@ -40,7 +40,9 @@ CREATE TABLE evl (
     izvor_odpadka text,
     predviden_postopek text,
     evl_status varchar(100),
-    ind_sprejeto boolean
+    ind_sprejeto boolean,
+    obcina_oddaja bigint,
+    obcina_prejem bigint
 );
 
 CREATE TABLE obcine (
@@ -53,3 +55,12 @@ CREATE TABLE naselja (
     name text NOT NULL,
     o_id bigint NOT NULL
 );
+
+CREATE TABLE ulice (
+    id bigint PRIMARY KEY,
+    name text NOT NULL,
+    o_id bigint NOT NULL
+);
+
+UPDATE evl e1 SET obcina_oddaja = (SELECT o.id from evl e, obcine o, ulice u, naselja n WHERE LOWER(e.lokacija_oddaje) LIKE LOWER(u.name) || '%' AND LOWER(e.lokacija_oddaje) LIKE
+ '%' || LOWER(n.name) AND u.o_id = o.id AND n.o_id = o.id AND e.evl_id = e1.evl_id LIMIT 1);

@@ -134,12 +134,16 @@ for i in range(rows):
         ind_sprejeto = True
     else:
         ind_sprejeto = False
+    
+
+    obcina_oddaja = None
+    obcina_prejem = None
 
     cur.execute("INSERT INTO sender (id, name) VALUES (%s, %s) ON CONFLICT (id) DO NOTHING;", [sender_id, df.loc[i, "s_name"]])
     cur.execute("INSERT INTO receiver (id, name) VALUES (%s, %s) ON CONFLICT (id) DO NOTHING;", [receiver_id, df.loc[i, "r_name"]])
     cur.execute("INSERT INTO transporter (id, name) VALUES (%s, %s) ON CONFLICT (id) DO NOTHING;", [transporter_id, df.loc[i, "t_name"]])
 
-    cur.execute("INSERT INTO evl (sender_id, receiver_id, transporter_id, sender_status, receiver_status, dat_oddaje, kraj_oddaje, lokacija_oddaje, parcele_oddaja, dat_prejem_zav, kraj_prejema, lokacija_prejema, parcele_prejem, wol_num, naziv_odpadka, nevaren, kol_kg, emb_shema, svece, dejavnost_nast, izvor_odpadka, predviden_postopek, evl_status, ind_sprejeto) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);", [sender_id, receiver_id, transporter_id, sender_status, receiver_status, dat_oddaje, kraj_oddaje, lokacija_oddaje, parcele_oddaja, dat_prejem_zav, kraj_prejema, lokacija_prejema, parcele_prejem, wol_num, naziv_odpadka, nevaren, kol_kg, emb_shema, svece, dejavnost_nast, izvor_odpadka, predviden_postopek, evl_status, ind_sprejeto])
+    cur.execute("INSERT INTO evl (sender_id, receiver_id, transporter_id, sender_status, receiver_status, dat_oddaje, kraj_oddaje, lokacija_oddaje, parcele_oddaja, dat_prejem_zav, kraj_prejema, lokacija_prejema, parcele_prejem, wol_num, naziv_odpadka, nevaren, kol_kg, emb_shema, svece, dejavnost_nast, izvor_odpadka, predviden_postopek, evl_status, ind_sprejeto, obcina_oddaja, obcina_prejem) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);", [sender_id, receiver_id, transporter_id, sender_status, receiver_status, dat_oddaje, kraj_oddaje, lokacija_oddaje, parcele_oddaja, dat_prejem_zav, kraj_prejema, lokacija_prejema, parcele_prejem, wol_num, naziv_odpadka, nevaren, kol_kg, emb_shema, svece, dejavnost_nast, izvor_odpadka, predviden_postopek, evl_status, ind_sprejeto, obcina_oddaja, obcina_prejem])
 
 
 # commit changes to db
