@@ -1,7 +1,7 @@
 <template>
 	<div id="home">
 		<div class="map-container">
-			<slovenian-map />
+			<slovenian-map v-if="!hide" />
 		</div>
 	</div>
 </template>
@@ -10,6 +10,11 @@
 	import SlovenianMap from '../components/SlovenianMap.vue';
 
 	export default {
+		data() {
+			return {
+				hide: true,
+			};
+		},
 		components: {
 			SlovenianMap,
 		},
@@ -23,8 +28,8 @@
 		height: 100%;
 	}
 	.map-container {
+		position: relative;
 		width: 100%;
 		height: 100%;
-		background-color: lightgrey;
 	}
 </style>

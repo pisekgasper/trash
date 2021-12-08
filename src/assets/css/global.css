@@ -1,8 +1,81 @@
-:root {
-    --primary-color: #5ae9bb;
-    --font-color: #0D0D0D;
-    --bg-color: #4D8F5F;
-    --bg-secondary-color: #F0D792;
+@font-face {
+    font-family: OktaNeue;
+    src: url(../fonts/OktaNeueBlack.ttf);
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: OktaNeue;
+    src: url(../fonts/OktaNeueLight.ttf);
+}
+
+html[data-theme="light"] {
+    --accent: #18d089;
+
+    --font-color: #0b0b15;
+    --font-disabled: #777780;
+
+    --content: #0d0d19;
+
+    --bg-00: #fbf7ff;
+    --bg-01: #F4F0F7;
+    --bg-02: #EEEBF0;
+    --bg-03: #E3E1E6;
+    --bg-04: #D7D4D9;
+    --bg-05: #cac8cc;
+
+    --error: #bd2d2d;
+}
+
+html[data-theme="dark"] {
+    --accent: #18d089;
+
+    --font-color: white;
+    --font-disabled: #c6c6d5;
+
+    --content: #fbf7ff;
+
+    --bg-00: #0d0d19;
+    --bg-01: #191925;
+    --bg-02: #20202b;
+    --bg-03: #282832;
+    --bg-04: #2f2f39;
+    --bg-05: #363640;
+
+    --error: #bd2d2d;
+}
+
+html {
+    font-size: 10px;
+}
+
+@media screen and (min-width: 320px) {
+    html {
+        font-size: calc(10px + 2 * ((100vw - 320px) / 680));
+    }
+}
+
+@media screen and (min-width: 1000px) {
+    html {
+        font-size: 12px;
+    }
+}
+
+.heading {
+    font-size: 1.7em;
+}
+
+html,
+body {
+    background-color: var(--bg-00) !important;
+}
+
+* {
+    font-family: OktaNeue, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: var(--font-color);
+    transition: color 0.1s ease-out;
 }
 
 button {
@@ -12,4 +85,56 @@ button {
     color: white;
     border-color: var(--font-color);
     cursor: pointer;
+}
+
+@media only screen and (max-width: 768px) {
+    #cursor-container {
+        display: none !important;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    html:not(.show-cursor) * {
+        cursor: none !important;
+    }
+}
+
+.shadow-01 {
+    box-shadow:
+        /* offset-x | offset-y | blur-radius | spread-radius | color */
+        0px 1px 1px 0px hsla(0, 0%, 0%, 0.14),
+        0px 2px 1px -1px hsla(0, 0%, 0%, 0.12),
+        0px 1px 3px 0px hsla(0, 0%, 0%, 0.2);
+}
+
+.shadow-02 {
+    box-shadow:
+        /* offset-x | offset-y | blur-radius | spread-radius | color */
+        0px 3px 4px 0px hsla(0, 0%, 0%, 0.14),
+        0px 3px 3px -2px hsla(0, 0%, 0%, 0.12),
+        0px 1px 8px 0px hsla(0, 0%, 0%, 0.2);
+}
+
+.shadow-03 {
+    box-shadow:
+        /* offset-x | offset-y | blur-radius | spread-radius | color */
+        0px 6px 10px 0px hsla(0, 0%, 0%, 0.14),
+        0px 1px 18px 0px hsla(0, 0%, 0%, 0.12),
+        0px 3px 5px -1px hsla(0, 0%, 0%, 0.2);
+}
+
+.shadow-04 {
+    box-shadow:
+        /* offset-x | offset-y | blur-radius | spread-radius | color */
+        0px 12px 17px 2px hsla(0, 0%, 0%, 0.14),
+        0px 5px 22px 4px hsla(0, 0%, 0%, 0.12),
+        0px 7px 8px -4px hsla(0, 0%, 0%, 0.2);
+}
+
+.shadow-05 {
+    box-shadow:
+        /* offset-x | offset-y | blur-radius | spread-radius | color */
+        0px 24px 38px 3px hsla(0, 0%, 0%, 0.14),
+        0px 9px 46px 8px hsla(0, 0%, 0%, 0.12),
+        0px 11px 15px -7px hsla(0, 0%, 0%, 0.2);
 }
