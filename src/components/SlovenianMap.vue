@@ -1,7 +1,6 @@
 <template>
 	<svg id="map-svg"></svg>
 	<custom-cursor></custom-cursor>
-	<div id="overlay-box" v-if="showOverlay"></div>
 </template>
 
 <script>
@@ -18,6 +17,7 @@
 		data() {
 			return {
 				svg: null,
+				regions: null,
 				g: null,
 				path: null,
 				zoom: null,
@@ -25,6 +25,7 @@
 				height: null,
 				mainFill: null,
 				borderFill: null,
+				regionClicked: null,
 			};
 		},
 		mounted() {
@@ -32,69 +33,105 @@
 			this.$nextTick().then(() => {this.draw()});
 		},
 		methods: {
-			zoomed(event) {
-				const {transform} = event;
-				this.g.attr("transform", transform);
-    			this.g.attr("stroke-width", 1 / transform.k);
-			},
-			clicked(event, d) {
-				const [[x0, y0], [x1, y1]] = this.path.bounds(d);
-				event.stopPropagation();
+			reset() {
 				this.regions.transition().style("fill", null);
-				d3.select('#map-svg').transition().style("fill", "red");
 				this.svg.transition().duration(750).call(
+				this.zoom.transform,
+				d3.zoomIdentity,
+				d3.zoomTransform(this.svg.node()).invert([this.width / 2, this.height / 2])
+				);
+			},
+			clicked(ev, d) {
+				document.getElementById('cursor-container').style.display = 'none';
+
+				if (this.regionClicked === d.properties.OB_ID) {
+					this.reset();
+					this.regionClicked = null;
+				} else {
+					this.regionClicked = d.properties.OB_ID;
+					const element = d3.select('#map-svg g #ob' + d.properties.OB_ID);
+					const bounds = element.node().getBBox();
+					let x0 = bounds.x;
+					let x1 = bounds.x + bounds.width;
+					let y0 = bounds.y;
+					let y1 = bounds.y + bounds.height;
+
+					this.regions.transition().style('fill', getComputedStyle(document.documentElement).getPropertyValue('--bg-04'));
+					element.transition().style('fill', '#18d089');
+					this.svg.transition().duration(750).call(
 					this.zoom.transform,
 					d3.zoomIdentity
 						.translate(this.width / 2, this.height / 2)
 						.scale(Math.min(8, 0.9 / Math.max((x1 - x0) / this.width, (y1 - y0) / this.height)))
 						.translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
-					d3.pointer(event, this.svg.node())
-				);
+					d3.pointer(ev, this.svg.node())
+					);
+				}
+			},
+			handleZoom (e) {
+				d3.select('#map-svg .regional-borders')
+					.attr('transform', e.transform);
+				d3.select('#map-svg g')
+					.attr('transform', e.transform);
 			},
 			draw() {
 				this.svg = null;
 				this.mainFill = getComputedStyle(document.documentElement).getPropertyValue('--bg-04');
 				this.borderFill = getComputedStyle(document.documentElement).getPropertyValue('--accent');
-				console.log(this.mainFill);
-				let width = 1920;
-				let height = 1080;
+
+				this.width = 1920;
+				this.height = 1080;
 				this.svg = d3.select('#map-svg')
-					.attr("viewBox", [0, 0, width, height]);
+					.attr("viewBox", [0, 0, this.width, this.height]);
 
 				var geoData = topojson.feature(geoJsonOB, geoJsonOB.objects.regions);
 
 				var projection = d3
 					.geoIdentity()
 					.reflectY(true)
-					.fitSize([width, height], geoData);
+					.fitSize([this.width, this.height], geoData);
 					
-				var path = d3.geoPath().projection(projection);
+				this.path = d3.geoPath().projection(projection);
 
-				
+				this.zoom = d3.zoom()
+					.scaleExtent([1, 5])
+					.translateExtent([[0, 0], [this.width, this.height]])
+					.on('zoom', this.handleZoom);
+
+				this.svg.call(this.zoom);
+
 				this.svg.append('g')
 				.attr('class', 'regions')
 				.on('mouseenter', function () {
-					document.getElementById('cursor-container').style.display = 'block';
+					document.getElementById('cursor-container').classList.add('entered');
 					document.getElementsByTagName('html')[0].classList.remove('show-cursor');
 				})
 				.on('mouseleave', function () {
+					document.getElementById('cursor-container').classList.remove('entered');
 					document.getElementById('cursor-container').style.display = 'none';
 					document.getElementsByTagName('html')[0].classList.add('show-cursor');
+				})
+				.on('mousedown', function() {
+					document.getElementById('cursor-container').style.display = 'none';
+				})
+				.on('mouseup', function() {
+					document.getElementById('cursor-container').style.display = 'block';
 				})
 				.selectAll('path')
 				.data(topojson.feature(geoJsonOB, geoJsonOB.objects.regions).features)
 				.enter()
 				.append('path')
-				.attr('d', path)
+				.attr('d', this.path)
 				.attr('fill', this.mainFill)
+				.attr("id", function(d) { return 'ob' + d.properties.OB_ID; })
 				.on('mouseover', function (ev, d) {
-					console.log(d.properties.OB_UIME);
 					document.getElementById('overlay-box').querySelector('span').innerHTML = d.properties.OB_UIME;
 					d3.select(this).attr('fill', getComputedStyle(document.documentElement).getPropertyValue('--bg-02'));
 				})
 				.on('mouseout', function() {
 					d3.select(this).attr('fill', getComputedStyle(document.documentElement).getPropertyValue('--bg-04'));
-				});
+				})
+				.on('click', this.clicked);
 
 				// GLOW
 				//Container for the gradients
@@ -124,9 +161,10 @@
 					})
 					.attr('fill', 'none')
 					.attr('stroke', '#18d089')
-					.attr("d", path(topojson.mesh(geoJsonOB, geoJsonOB.objects.regions)));
-				d3.selectAll('path')
-				.style("filter", "url(#glow)");
+					.style("filter", "url(#glow)")
+					.attr("d", this.path(topojson.mesh(geoJsonOB, geoJsonOB.objects.regions)));
+
+				this.regions = d3.selectAll('#map-svg g path');
 			}
 		},
 	};

@@ -47,6 +47,9 @@ export default {
     },
     methods: {
 		move_cursor(ev) {
+            let container = document.getElementById('cursor-container');
+            if (container.classList.contains('entered'))
+                container.style.display = 'block';
             this.velocity.x = ev.clientX;
             this.velocity.y = ev.clientY;
             this.dot.style.left = ev.clientX + 'px';
@@ -75,13 +78,13 @@ export default {
                     easing: 'easeInOutQuad',
                     duration: 500,
                 });
-                anime({
+                /*anime({
                     targets: '#cursor-container #overlay-box',
                     opacity: ['0.0', '1.0'],
                     backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--content') + '00', getComputedStyle(document.documentElement).getPropertyValue('--content') + 'FF'],
                     easing: 'easeInOutQuad',
                     duration: 500,
-                });
+                });*/
                 this.mouseMoved = true;
             }
         },
