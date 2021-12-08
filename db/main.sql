@@ -1,5 +1,13 @@
 /* pSQL script that creates a "sloveniantrash" data base */
 
+
+CREATE DATABASE "sloveniantrash"
+  WITH OWNER "postgres"
+  ENCODING 'UTF8'
+  TEMPLATE template0
+  LC_COLLATE = 'sl_SI.UTF-8'
+  LC_CTYPE = 'sl_SI.UTF-8';
+
 CREATE TABLE sender (
     id bigint PRIMARY KEY,
     name text NOT NULL
@@ -54,9 +62,6 @@ CREATE TABLE naselja (
     id bigint PRIMARY KEY,
     name text NOT NULL,
     o_id bigint NOT NULL
-<<<<<<< HEAD
-);
-=======
 );
 
 CREATE TABLE ulice (
@@ -65,6 +70,5 @@ CREATE TABLE ulice (
     o_id bigint NOT NULL
 );
 
-UPDATE evl e1 SET obcina_oddaja = (SELECT o.id from evl e, obcine o, ulice u, naselja n WHERE LOWER(e.lokacija_oddaje) LIKE LOWER(u.name) || '%' AND LOWER(e.lokacija_oddaje) LIKE
- '%' || LOWER(n.name) AND u.o_id = o.id AND n.o_id = o.id AND e.evl_id = e1.evl_id LIMIT 1);
->>>>>>> 19d7876e592d867e9c79bc97a52f964d718b772e
+
+UPDATE evl e1 SET obcina_oddaja = (SELECT o.id from evl e, obcine o, ulice u, naselja n WHERE LOWER(e.lokacija_oddaje) LIKE LOWER(u.name) || '%' AND LOWER(e.lokacija_oddaje) LIKE '%' || LOWER(n.name) AND u.o_id = o.id AND n.o_id = o.id AND e.evl_id = e1.evl_id LIMIT 1);
