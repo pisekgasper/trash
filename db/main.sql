@@ -72,3 +72,32 @@ CREATE TABLE ulice (
 
 
 UPDATE evl e1 SET obcina_oddaja = (SELECT o.id from evl e, obcine o, ulice u, naselja n WHERE LOWER(e.lokacija_oddaje) LIKE LOWER(u.name) || '%' AND LOWER(e.lokacija_oddaje) LIKE '%' || LOWER(n.name) AND u.o_id = o.id AND n.o_id = o.id AND e.evl_id = e1.evl_id LIMIT 1);
+
+/* poizvedba za tezo po mesecih v nekem letu */
+SELECT DATE_PART('month',dat_oddaje) AS  mesec,
+       sum(kol_kg) AS teza
+FROM evl
+WHERE DATE_PART('year',dat_oddaje) = '2021'
+GROUP BY mesec;
+
+/* poizvedba za oddane odpadke posiljatelja */
+SELECT sum(kol_kg) as izvozi 
+FROM evl
+WHERE sender_id = 5472261000;
+
+/* poizvedba za sprejete odpadke sprejemnika */
+SELECT sum(kol_kg) as uvozi 
+FROM evl
+WHERE receiver_id = 5005647000;
+
+/* poizvedba za prevozene odpadke transporterja */
+SELECT sum(kol_kg) as prevozi 
+FROM evl
+WHERE transporter_id = 1810065000;
+
+/* poizvedba za st. evl po obcinah */
+SELECT o.name, e.obcina_oddaja, count(e.evl_id) AS st_evl 
+FROM evl e inner join obcine o ON o.id = e.obcina_oddaja 
+WHERE obcina_oddaja IS NOT NULL 
+GROUP BY e.obcina_oddaja, o.name 
+ORDER BY st_evl DESC;

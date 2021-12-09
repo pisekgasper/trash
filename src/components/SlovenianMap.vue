@@ -1,197 +1,250 @@
 <template>
-	<svg id="map-svg"></svg>
-	<custom-cursor></custom-cursor>
+  <svg id="map-svg"></svg>
+  <custom-cursor></custom-cursor>
 </template>
 
 <script>
-	import * as d3 from 'd3';
-	import * as topojson from 'topojson';
-	import geoJsonOB from '../assets/geojson/OB_topo.json';
+import * as d3 from "d3";
+import * as topojson from "topojson";
+import geoJsonOB from "../assets/geojson/OB_topo.json";
 
-	import CustomCursor from './CustomCursor.vue'
+import CustomCursor from "./CustomCursor.vue";
 
-	export default {
-		components: {
-			CustomCursor,
-		},
-		data() {
-			return {
-				svg: null,
-				regions: null,
-				g: null,
-				path: null,
-				zoom: null,
-				width: null,
-				height: null,
-				mainFill: null,
-				borderFill: null,
-				regionClicked: null,
-			};
-		},
-		mounted() {
-			document.getElementsByTagName('html')[0].classList.add('loaded');
-			this.$nextTick().then(() => {this.draw()});
-		},
-		methods: {
-			reset() {
-				this.regions.transition().style("fill", null);
-				this.svg.transition().duration(750).call(
-				this.zoom.transform,
-				d3.zoomIdentity,
-				d3.zoomTransform(this.svg.node()).invert([this.width / 2, this.height / 2])
-				);
-			},
-			clicked(ev, d) {
-				document.getElementById('cursor-container').style.display = 'none';
+export default {
+  components: {
+    CustomCursor,
+  },
+  data() {
+    return {
+      svg: null,
+      regions: null,
+      g: null,
+      path: null,
+      zoom: null,
+      width: null,
+      height: null,
+      mainFill: null,
+      borderFill: null,
+      regionClicked: null,
+    };
+  },
+  mounted() {
+    document.getElementsByTagName("html")[0].classList.add("loaded");
+    this.$nextTick().then(() => {
+      this.draw();
+    });
+  },
+  methods: {
+    reset() {
+      this.regions.transition().style("fill", null);
+      this.svg
+        .transition()
+        .duration(750)
+        .call(
+          this.zoom.transform,
+          d3.zoomIdentity,
+          d3
+            .zoomTransform(this.svg.node())
+            .invert([this.width / 2, this.height / 2])
+        );
+    },
+    clicked(ev, d) {
+      document.getElementById("cursor-container").style.display = "none";
 
-				if (this.regionClicked === d.properties.OB_ID) {
-					this.reset();
-					this.regionClicked = null;
-				} else {
-					this.regionClicked = d.properties.OB_ID;
-					const element = d3.select('#map-svg g #ob' + d.properties.OB_ID);
-					const bounds = element.node().getBBox();
-					let x0 = bounds.x;
-					let x1 = bounds.x + bounds.width;
-					let y0 = bounds.y;
-					let y1 = bounds.y + bounds.height;
+      if (this.regionClicked === d.properties.OB_ID) {
+        this.reset();
+        this.regionClicked = null;
+      } else {
+        this.regionClicked = d.properties.OB_ID;
+        const element = d3.select("#map-svg g #ob" + d.properties.OB_ID);
+        const bounds = element.node().getBBox();
+        let x0 = bounds.x;
+        let x1 = bounds.x + bounds.width;
+        let y0 = bounds.y;
+        let y1 = bounds.y + bounds.height;
 
-					this.regions.transition().style('fill', getComputedStyle(document.documentElement).getPropertyValue('--bg-04'));
-					element.transition().style('fill', '#18d089');
-					this.svg.transition().duration(750).call(
-					this.zoom.transform,
-					d3.zoomIdentity
-						.translate(this.width / 2, this.height / 2)
-						.scale(Math.min(8, 0.9 / Math.max((x1 - x0) / this.width, (y1 - y0) / this.height)))
-						.translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
-					d3.pointer(ev, this.svg.node())
-					);
-				}
-			},
-			handleZoom (e) {
-				d3.select('#map-svg .regional-borders')
-					.attr('transform', e.transform);
-				d3.select('#map-svg g')
-					.attr('transform', e.transform);
-			},
-			draw() {
-				this.svg = null;
-				this.mainFill = getComputedStyle(document.documentElement).getPropertyValue('--bg-04');
-				this.borderFill = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+        this.regions
+          .transition()
+          .style(
+            "fill",
+            getComputedStyle(document.documentElement).getPropertyValue(
+              "--bg-04"
+            )
+          );
+        element.transition().style("fill", "#18d089");
+        this.svg
+          .transition()
+          .duration(750)
+          .call(
+            this.zoom.transform,
+            d3.zoomIdentity
+              .translate(this.width / 2, this.height / 2)
+              .scale(
+                Math.min(
+                  8,
+                  0.9 /
+                    Math.max((x1 - x0) / this.width, (y1 - y0) / this.height)
+                )
+              )
+              .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
+            d3.pointer(ev, this.svg.node())
+          );
+      }
+    },
+    handleZoom(e) {
+      d3.select("#map-svg .regional-borders").attr("transform", e.transform);
+      d3.select("#map-svg g").attr("transform", e.transform);
+    },
+    draw() {
+      this.svg = null;
+      this.mainFill = getComputedStyle(
+        document.documentElement
+      ).getPropertyValue("--bg-04");
+      this.borderFill = getComputedStyle(
+        document.documentElement
+      ).getPropertyValue("--accent");
 
-				this.width = 1920;
-				this.height = 1080;
-				this.svg = d3.select('#map-svg')
-					.attr("viewBox", [0, 0, this.width, this.height]);
+      this.width = 1920;
+      this.height = 1080;
+      this.svg = d3
+        .select("#map-svg")
+        .attr("viewBox", [0, 0, this.width, this.height]);
 
-				var geoData = topojson.feature(geoJsonOB, geoJsonOB.objects.regions);
+      var geoData = topojson.feature(geoJsonOB, geoJsonOB.objects.regions);
 
-				var projection = d3
-					.geoIdentity()
-					.reflectY(true)
-					.fitSize([this.width, this.height], geoData);
-					
-				this.path = d3.geoPath().projection(projection);
+      var projection = d3
+        .geoIdentity()
+        .reflectY(true)
+        .fitSize([this.width, this.height], geoData);
 
-				this.zoom = d3.zoom()
-					.scaleExtent([1, 5])
-					.translateExtent([[0, 0], [this.width, this.height]])
-					.on('zoom', this.handleZoom);
+      this.path = d3.geoPath().projection(projection);
 
-				this.svg.call(this.zoom);
+      this.zoom = d3
+        .zoom()
+        .scaleExtent([1, 5])
+        .translateExtent([
+          [0, 0],
+          [this.width, this.height],
+        ])
+        .on("zoom", this.handleZoom);
 
-				this.svg.append('g')
-				.attr('class', 'regions')
-				.on('mouseenter', function () {
-					document.getElementById('cursor-container').classList.add('entered');
-					document.getElementsByTagName('html')[0].classList.remove('show-cursor');
-				})
-				.on('mouseleave', function () {
-					document.getElementById('cursor-container').classList.remove('entered');
-					document.getElementById('cursor-container').style.display = 'none';
-					document.getElementsByTagName('html')[0].classList.add('show-cursor');
-				})
-				.on('mousedown', function() {
-					document.getElementById('cursor-container').style.display = 'none';
-				})
-				.on('mouseup', function() {
-					document.getElementById('cursor-container').style.display = 'block';
-				})
-				.selectAll('path')
-				.data(topojson.feature(geoJsonOB, geoJsonOB.objects.regions).features)
-				.enter()
-				.append('path')
-				.attr('d', this.path)
-				.attr('fill', this.mainFill)
-				.attr("id", function(d) { return 'ob' + d.properties.OB_ID; })
-				.on('mouseover', function (ev, d) {
-					document.getElementById('overlay-box').querySelector('span').innerHTML = d.properties.OB_UIME;
-					d3.select(this).attr('fill', getComputedStyle(document.documentElement).getPropertyValue('--bg-02'));
-				})
-				.on('mouseout', function() {
-					d3.select(this).attr('fill', getComputedStyle(document.documentElement).getPropertyValue('--bg-04'));
-				})
-				.on('click', this.clicked);
+      this.svg.call(this.zoom);
 
-				// GLOW
-				//Container for the gradients
-				var defs = this.svg.append("defs");
+      this.svg
+        .append("g")
+        .attr("class", "regions")
+        .on("mouseenter", function () {
+          document.getElementById("cursor-container").classList.add("entered");
+          document
+            .getElementsByTagName("html")[0]
+            .classList.remove("show-cursor");
+        })
+        .on("mouseleave", function () {
+          document
+            .getElementById("cursor-container")
+            .classList.remove("entered");
+          document.getElementById("cursor-container").style.display = "none";
+          document.getElementsByTagName("html")[0].classList.add("show-cursor");
+        })
+        .on("mousedown", function () {
+          document.getElementById("cursor-container").style.display = "none";
+        })
+        .on("mouseup", function () {
+          document.getElementById("cursor-container").style.display = "block";
+        })
+        .selectAll("path")
+        .data(topojson.feature(geoJsonOB, geoJsonOB.objects.regions).features)
+        .enter()
+        .append("path")
+        .attr("d", this.path)
+        .attr("fill", this.mainFill)
+        .attr("id", function (d) {
+          return "ob" + d.properties.OB_ID;
+        })
+        .on("mouseover", function (ev, d) {
+          document
+            .getElementById("overlay-box")
+            .querySelector("span").innerHTML = d.properties.OB_UIME;
+          d3.select(this).attr(
+            "fill",
+            getComputedStyle(document.documentElement).getPropertyValue(
+              "--bg-02"
+            )
+          );
+        })
+        .on("mouseout", function () {
+          d3.select(this).attr(
+            "fill",
+            getComputedStyle(document.documentElement).getPropertyValue(
+              "--bg-04"
+            )
+          );
+        })
+        .on("click", this.clicked);
 
-				//Filter for the outside glow
-				var filter = defs.append("filter")
-					.attr("id","glow");
-				filter.append("feGaussianBlur")
-					.attr("stdDeviation","5")
-					.attr("result","coloredBlur");
-				var feMerge = filter.append("feMerge");
-				feMerge.append("feMergeNode")
-					.attr("in","coloredBlur");
-				feMerge.append("feMergeNode")
-					.attr("in","SourceGraphic");
+      // GLOW
+      //Container for the gradients
+      var defs = this.svg.append("defs");
 
-				this.svg.append("path")
-					.attr("class", "regional-borders")
-					.on('mouseenter', function () {
-						document.getElementById('cursor-container').style.display = 'block';
-						document.getElementsByTagName('html')[0].classList.remove('show-cursor');
-					})
-					.on('mouseleave', function () {
-						document.getElementById('cursor-container').style.display = 'none';
-						document.getElementsByTagName('html')[0].classList.add('show-cursor');
-					})
-					.attr('fill', 'none')
-					.attr('stroke', '#18d089')
-					.style("filter", "url(#glow)")
-					.attr("d", this.path(topojson.mesh(geoJsonOB, geoJsonOB.objects.regions)));
+      //Filter for the outside glow
+      var filter = defs.append("filter").attr("id", "glow");
+      filter
+        .append("feGaussianBlur")
+        .attr("stdDeviation", "5")
+        .attr("result", "coloredBlur");
+      var feMerge = filter.append("feMerge");
+      feMerge.append("feMergeNode").attr("in", "coloredBlur");
+      feMerge.append("feMergeNode").attr("in", "SourceGraphic");
 
-				this.regions = d3.selectAll('#map-svg g path');
-			}
-		},
-	};
+      this.svg
+        .append("path")
+        .attr("class", "regional-borders")
+        .on("mouseenter", function () {
+          document.getElementById("cursor-container").style.display = "block";
+          document
+            .getElementsByTagName("html")[0]
+            .classList.remove("show-cursor");
+        })
+        .on("mouseleave", function () {
+          document.getElementById("cursor-container").style.display = "none";
+          document.getElementsByTagName("html")[0].classList.add("show-cursor");
+        })
+        .attr("fill", "none")
+        .attr("stroke", "#18d089")
+        .style("filter", "url(#glow)")
+        .attr(
+          "d",
+          this.path(topojson.mesh(geoJsonOB, geoJsonOB.objects.regions))
+        );
+
+      this.regions = d3.selectAll("#map-svg g path");
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
-	#map-svg {
-		background-color: transparent;
-		max-height: 100%;
-	}
+#map-svg {
+  background-color: transparent;
+  max-height: 100%;
+}
 
-	.regional-borders {
-		pointer-events: none;
-	}
+.regional-borders {
+  pointer-events: none;
+}
 
-	html:not(.loaded) #cursor-container .border,
-	html:not(.loaded) #cursor-container .dot {
-		opacity: 0;
-	}
+html:not(.loaded) #cursor-container .border,
+html:not(.loaded) #cursor-container .dot {
+  opacity: 0;
+}
 
-	#overlay-box {
-		position: fixed;
-		z-index: 999;
-		background-color: green;
-		width: 100px;
-		height: 2em;
-		top: 0;
-		left: 0;
-	}
+#overlay-box {
+  position: fixed;
+  z-index: 999;
+  background-color: green;
+  width: 100px;
+  height: 2em;
+  top: 0;
+  left: 0;
+}
 </style>

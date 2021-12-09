@@ -11,12 +11,15 @@
     "@fortawesome/vue-fontawesome": "^3.0.0-5",
     "animejs": "^3.2.1",
     "axios": "^0.24.0",
+    "chart.js": "^3.6.2",
     "core-js": "^3.6.5",
     "d3": "^7.1.1",
     "topojson": "^3.0.2",
     "vue": "^3.0.0",
     "vue-awesome": "^4.3.1",
-    "vue-router": "^4.0.0-0"
+    "vue-chartjs": "^3.5.1",
+    "vue-router": "^4.0.0-0",
+    "vue3-chart-v2": "^0.8.3"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
