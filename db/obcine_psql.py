@@ -1,10 +1,11 @@
 from csv import DictReader
 import psycopg2
 
+host = '91.236.1.204'
 dbname = 'sloveniantrash'
 user = 'postgres'
 password = 'admin'
-conn = psycopg2.connect(dbname=dbname, user=user, password=password)
+conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password)
 # set up a cursor to work with db
 cur = conn.cursor()
 

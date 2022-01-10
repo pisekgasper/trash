@@ -13,10 +13,11 @@ register_adapter(np.int64, AsIs)
 # connect to db
 path = "C:/Users/Nik/Documents/fri/3. letnik/MT/Modul1-podatki/EVL2021_UTF.csv"
 sheet = "Export Worksheet"
+host = '91.236.1.204'
 dbname = 'sloveniantrash'
 user = 'postgres'
 password = 'admin'
-conn = psycopg2.connect(dbname=dbname, user=user, password=password)
+conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password)
 conn.set_client_encoding('UTF8')
 print("[%s] CONNECTED" % strftime("%H:%M:%S", gmtime()))
 
