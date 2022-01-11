@@ -12,7 +12,7 @@
     </select>
   </div>
   <div class="graphs">
-    <line-chart :data="monthly_data"></line-chart>
+    <column-chart :data="monthly_data"></column-chart>
   </div>
 </template>
 
@@ -49,21 +49,29 @@ export default {
     },
     getYearlyProduce() {
       var query =
-        "SELECT DATE_PART('month',dat_oddaje) AS month, sum(kol_kg) AS weight \
-         FROM evl \
-         WHERE DATE_PART('year',dat_oddaje) = '" +
-        this.year.toString +
-        "' AND naziv_odpadka LIKE " +
-        this.type +
-        " \
-         GROUP BY mesec;";
+        `SELECT DATE_PART('month',dat_oddaje) AS month, sum(kol_kg) AS weight FROM evl WHERE DATE_PART('year',dat_oddaje) = '${this.year}' AND naziv_odpadka LIKE '${this.type}' GROUP BY month;`;
 
       http
         .get("/trash", { params: { q: query } })
         .then((response) => {
+            console.log(response)
           this.monthly_data = {};
+          var months_slo = {
+              1: "Januar",
+              2: "Februar",
+              3: "Marec",
+              4: "April",
+              5: "Maj",
+              6: "Junij",
+              7: "Julij",
+              8: "Avgust",
+              9: "September",
+              10: "Oktober",
+              11: "November",
+              12: "December"
+          }
           response.data.forEach((e) => {
-            this.monthly_data[e.month] = e.weight;
+            this.monthly_data[months_slo[e.month]] = e.weight;
           });
           console.log(this.monthly_data);
         })
