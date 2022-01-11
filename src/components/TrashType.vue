@@ -1,22 +1,24 @@
 <template>
   <div class="form">
     <select name="type" v-model="type">
-        <option v-for="t in all_types" :value="t" :key="t">{{ t }}</option>
+      <option v-for="t in all_types" :value="t" :key="t">{{ t }}</option>
     </select>
     <select name="year" v-model="year">
-        <option value="2021">2021</option>
-        <option value="2020">2020</option>
-        <option value="2019">2019</option>
-        <option value="2018">2018</option>
-        <option value="2017">2017</option>
+      <option value="2021">2021</option>
+      <option value="2020">2020</option>
+      <option value="2019">2019</option>
+      <option value="2018">2018</option>
+      <option value="2017">2017</option>
     </select>
   </div>
   <div class="graphs">
-      <line-chart :data=monthly_data></line-chart>
+    <line-chart :data="monthly_data"></line-chart>
   </div>
 </template>
 
 <script>
+import http from "http";
+
 export default {
   data: function () {
     return {
@@ -29,12 +31,12 @@ export default {
   },
   methods: {
     getTypes() {
-      var query =
-        "SELECT DISTINCT naziv_odpadka AS type FROM evl;";
+      var query = "SELECT DISTINCT naziv_odpadka AS type FROM evl;";
+      console.log(query);
       http
-        .get("/trash", { params: { q: query } })
+        .get("http://91.236.1.204:8080/api/trash", { params: { q: query } })
         .then((response) => {
-          this.all_types = []
+          this.all_types = [];
           response.data.forEach((e) => {
             this.all_types.push(e.type);
           });
@@ -46,20 +48,20 @@ export default {
         });
     },
     getYearlyProduce() {
-        if (this.type = "") {
-            this.loading = true;
-            return;
-        }
-        var query =
+      var query =
         "SELECT DATE_PART('month',dat_oddaje) AS month, sum(kol_kg) AS weight \
          FROM evl \
-         WHERE DATE_PART('year',dat_oddaje) = '" + this.year.toString + "' AND naziv_odpadka LIKE " + this.type + " \
+         WHERE DATE_PART('year',dat_oddaje) = '" +
+        this.year.toString +
+        "' AND naziv_odpadka LIKE " +
+        this.type +
+        " \
          GROUP BY mesec;";
 
-        http
+      http
         .get("/trash", { params: { q: query } })
         .then((response) => {
-          this.monthly_data = {}
+          this.monthly_data = {};
           response.data.forEach((e) => {
             this.monthly_data[e.month] = e.weight;
           });
@@ -72,18 +74,9 @@ export default {
     },
   },
   mounted() {
-      this.getTypes();
+    this.getTypes();
   },
-  watch: {
-      type: function () {
-          this.debounceNew();
-      }
-  },
-  created: function () {
-      this.debouncedNew = _.debounce(this.getYearlyProduce, 500)
-  }
 };
 </script>
 
-<style lang="scss" scoped>
-</style>>
+<style lang="scss" scoped></style>
