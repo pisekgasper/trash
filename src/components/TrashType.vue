@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import http from "http";
+import http from "../http-common";
 
 export default {
   data: function () {
@@ -34,7 +34,7 @@ export default {
       var query = "SELECT DISTINCT naziv_odpadka AS type FROM evl;";
       console.log(query);
       http
-        .get("http://91.236.1.204:8080/api/trash", { params: { q: query } })
+        .get("/trash", { params: { q: query } })
         .then((response) => {
           this.all_types = [];
           response.data.forEach((e) => {
@@ -76,6 +76,11 @@ export default {
   mounted() {
     this.getTypes();
   },
+  watch: {
+      type: function () {
+          this.getYearlyProduce();
+      }
+  }
 };
 </script>
 
