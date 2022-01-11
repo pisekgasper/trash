@@ -93,7 +93,8 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color: var(--font-color);
-    transition: color 0.1s ease-out;
+    transition: color 0.8s cubic-bezier(.31,.68,.17,.95), background-color 0.8s cubic-bezier(.31,.68,.17,.95);
+    transition-timing-function: cubic-bezier(.31,.68,.17,.95);
 }
 
 button {
