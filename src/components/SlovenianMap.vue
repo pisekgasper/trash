@@ -1,19 +1,15 @@
 <template>
   <svg id="map-svg"></svg>
-  <custom-cursor></custom-cursor>
 </template>
 
 <script>
 import * as d3 from "d3";
 import * as topojson from "topojson";
 import geoJsonOB from "../assets/geojson/OB_topo.json";
-
-import CustomCursor from "./CustomCursor.vue";
+// import anime from "animejs/lib/anime.es.js";
+// import promiseAnime from "../helpers/animewaiter";
 
 export default {
-  components: {
-    CustomCursor,
-  },
   data() {
     return {
       svg: null,
@@ -50,6 +46,9 @@ export default {
     },
     clicked(ev, d) {
       document.getElementById("cursor-container").style.display = "none";
+      this.borderFill = getComputedStyle(
+        document.documentElement
+      ).getPropertyValue("--accent");
 
       if (this.regionClicked === d.properties.OB_ID) {
         this.reset();
@@ -63,15 +62,14 @@ export default {
         let y0 = bounds.y;
         let y1 = bounds.y + bounds.height;
 
-        this.regions
-          .transition()
-          .style(
-            "fill",
-            getComputedStyle(document.documentElement).getPropertyValue(
-              "--bg-04"
-            )
-          );
-        element.transition().style("fill", "#18d089");
+        this.regions.transition().style(
+          "fill",
+          "transparent"
+          // getComputedStyle(document.documentElement).getPropertyValue(
+          //   "--bg-02"
+          // )
+        );
+        element.transition().style("fill", this.borderFill);
         this.svg
           .transition()
           .duration(750)
@@ -97,9 +95,10 @@ export default {
     },
     draw() {
       this.svg = null;
-      this.mainFill = getComputedStyle(
-        document.documentElement
-      ).getPropertyValue("--bg-04");
+      // this.mainFill = getComputedStyle(
+      //   document.documentElement
+      // ).getPropertyValue("--bg-02");
+      this.mainFill = "transparent";
       this.borderFill = getComputedStyle(
         document.documentElement
       ).getPropertyValue("--accent");
@@ -128,8 +127,6 @@ export default {
         ])
         .on("zoom", this.handleZoom);
 
-      this.svg.call(this.zoom);
-
       this.svg
         .append("g")
         .attr("class", "regions")
@@ -138,6 +135,22 @@ export default {
           document
             .getElementsByTagName("html")[0]
             .classList.remove("show-cursor");
+          // promiseAnime({
+          //   targets: "#overlay-box",
+          //   opacity: [0, 1],
+          //   scale: 1.0,
+          //   translateX: "-100%",
+          //   easing: "easeOutCirc",
+          //   duration: 6000,
+          // }).then(() => console.log(""));
+          // anime({
+          //   targets: "#overlay-box",
+          //   opacity: [0, 1],
+          //   scale: [0.0, 1.0],
+          //   translateX: "-125%",
+          //   easing: "easeOutCirc",
+          //   duration: 500,
+          // });
         })
         .on("mouseleave", function () {
           document
@@ -145,6 +158,8 @@ export default {
             .classList.remove("entered");
           document.getElementById("cursor-container").style.display = "none";
           document.getElementsByTagName("html")[0].classList.add("show-cursor");
+          // document.getElementById("overlay-box").style.transform =
+          //   "translateX(-50%)";
         })
         .on("mousedown", function () {
           document.getElementById("cursor-container").style.display = "none";
@@ -168,16 +183,17 @@ export default {
           d3.select(this).attr(
             "fill",
             getComputedStyle(document.documentElement).getPropertyValue(
-              "--bg-02"
+              "--map-hover"
             )
           );
         })
         .on("mouseout", function () {
           d3.select(this).attr(
             "fill",
-            getComputedStyle(document.documentElement).getPropertyValue(
-              "--bg-04"
-            )
+            "transparent"
+            // getComputedStyle(document.documentElement).getPropertyValue(
+            //   "--bg-02"
+            // )
           );
         })
         .on("click", this.clicked);
@@ -190,7 +206,7 @@ export default {
       var filter = defs.append("filter").attr("id", "glow");
       filter
         .append("feGaussianBlur")
-        .attr("stdDeviation", "5")
+        .attr("stdDeviation", "3.5")
         .attr("result", "coloredBlur");
       var feMerge = filter.append("feMerge");
       feMerge.append("feMergeNode").attr("in", "coloredBlur");
@@ -204,13 +220,15 @@ export default {
           document
             .getElementsByTagName("html")[0]
             .classList.remove("show-cursor");
+          // document.getElementById("overlay-box").style.transform =
+          //   "translate(-50%, -50%)";
         })
         .on("mouseleave", function () {
           document.getElementById("cursor-container").style.display = "none";
           document.getElementsByTagName("html")[0].classList.add("show-cursor");
         })
         .attr("fill", "none")
-        .attr("stroke", "#18d089")
+        .attr("stroke", this.borderFill)
         .style("filter", "url(#glow)")
         .attr(
           "d",
@@ -227,6 +245,7 @@ export default {
 #map-svg {
   background-color: transparent;
   max-height: 100%;
+  border-radius: 4vh;
 }
 
 .regional-borders {
