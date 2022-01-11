@@ -31,7 +31,7 @@
       <div class="container">
         <slovenian-map v-if="selectedTab == 0"></slovenian-map>
         <trash-type v-if="selectedTab == 1"></trash-type>
-        <personal-number></personal-number>
+        <personal-number v-if="selectedTab == 2"></personal-number>
       </div>
     </main>
   </div>
