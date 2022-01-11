@@ -23,6 +23,7 @@
     <main class="main">
       <div class="container">
         <slovenian-map v-if="selectedTab == 0"></slovenian-map>
+        <trash-type v-if="selectedTab == 1"></trash-type>
       </div>
     </main>
   </div>
@@ -32,6 +33,7 @@
 import SlovenianMap from "./components/SlovenianMap.vue";
 import ThemeSwitcher from "./components/ThemeSwitch.vue";
 import CustomCursor from "./components/CustomCursor.vue";
+import TrashType from "./components/TrashType.vue"
 
 export default {
   data() {
@@ -43,6 +45,7 @@ export default {
     ThemeSwitcher,
     SlovenianMap,
     CustomCursor,
+    TrashType,
   },
   mounted() {
     document.documentElement.classList.add("show-cursor");
