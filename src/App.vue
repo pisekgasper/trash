@@ -5,6 +5,7 @@
       <div class="theme-switcher-container">
         <theme-switcher></theme-switcher>
       </div>
+      <img id="FriLogo" src="@/assets/fri_logo.png" />
       <ul id="Menu">
         <li
           v-bind:class="{ selectedtab: selectedTab == 0 }"
@@ -17,6 +18,12 @@
           v-on:click="selectTab(1)"
         >
           Vrste odpadkov
+        </li>
+        <li
+          v-bind:class="{ selectedtab: selectedTab == 2 }"
+          v-on:click="selectTab(2)"
+        >
+          Mikroiskanje
         </li>
       </ul>
     </aside>
@@ -33,7 +40,7 @@
 import SlovenianMap from "./components/SlovenianMap.vue";
 import ThemeSwitcher from "./components/ThemeSwitch.vue";
 import CustomCursor from "./components/CustomCursor.vue";
-import TrashType from "./components/TrashType.vue"
+import TrashType from "./components/TrashType.vue";
 
 export default {
   data() {
@@ -154,7 +161,7 @@ export default {
 }
 #Menu {
   position: relative;
-  margin-top: 100px;
+  margin-top: 5vh;
   width: 100%;
   height: min-content;
 }
@@ -171,9 +178,18 @@ export default {
   cursor: pointer;
   font-weight: 400;
 }
+#Menu li:not(.selectedtab):hover {
+  background-color: var(--bg-02);
+}
+
 .selectedtab {
   background-color: var(--bg-00);
   transition: all 0.8s cubic-bezier(0.31, 0.68, 0.17, 0.95);
+}
+
+#FriLogo {
+  height: 25vh;
+  margin: auto;
 }
 </style>
  

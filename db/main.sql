@@ -101,3 +101,15 @@ FROM evl e inner join obcine o ON o.id = e.obcina_oddaja
 WHERE obcina_oddaja IS NOT NULL 
 GROUP BY e.obcina_oddaja, o.name 
 ORDER BY st_evl DESC;
+
+/* poizvedba po kolicini v letu 20XY groupano po obcinah */
+/* IZVOZ 2021 */
+    SELECT e.obcina_oddaja AS Obcina, SUM(e.kol_kg) as Kolicina 
+    FROM evl e 
+    WHERE DATE_PART('year', e.dat_oddaje) = '2021' 
+    GROUP BY e.obcina_oddaja;
+/* UVOZ */
+    SELECT e.obcina_prejem AS Obcina, SUM(e.kol_kg) as Kolicina 
+    FROM evl e 
+    WHERE DATE_PART('year', e.dat_oddaje) = '2021' 
+    GROUP BY e.obcina_oddaja;

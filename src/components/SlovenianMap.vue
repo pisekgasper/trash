@@ -6,6 +6,7 @@
 import * as d3 from "d3";
 import * as topojson from "topojson";
 import geoJsonOB from "../assets/geojson/OB_topo.json";
+// import http from "../http-common";
 // import anime from "animejs/lib/anime.es.js";
 // import promiseAnime from "../helpers/animewaiter";
 
@@ -31,6 +32,23 @@ export default {
     });
   },
   methods: {
+    // generateHeatMap() {
+    //   var query = "SELECT DISTINCT naziv_odpadka AS type FROM evl;";
+    //   console.log(query);
+    //   http
+    //     .get("/trash", { params: { q: query } })
+    //     .then((response) => {
+    //       this.all_types = [];
+    //       response.data.forEach((e) => {
+    //         this.all_types.push(e.type);
+    //       });
+    //       console.log(this.all_types);
+    //     })
+    //     .catch((e) => {
+    //       console.log(e);
+    //       this.loading = false;
+    //     });
+    // },
     reset() {
       this.regions.transition().style("fill", null);
       this.svg
@@ -45,17 +63,18 @@ export default {
         );
     },
     clicked(ev, d) {
+      console.log(d.properties);
       document.getElementById("cursor-container").style.display = "none";
       this.borderFill = getComputedStyle(
         document.documentElement
       ).getPropertyValue("--accent");
 
-      if (this.regionClicked === d.properties.OB_ID) {
+      if (this.regionClicked === d.properties.OB_MID) {
         this.reset();
         this.regionClicked = null;
       } else {
-        this.regionClicked = d.properties.OB_ID;
-        const element = d3.select("#map-svg g #ob" + d.properties.OB_ID);
+        this.regionClicked = d.properties.OB_MID;
+        const element = d3.select("#map-svg g #ob" + d.properties.OB_MID);
         const bounds = element.node().getBBox();
         let x0 = bounds.x;
         let x1 = bounds.x + bounds.width;
@@ -174,7 +193,7 @@ export default {
         .attr("d", this.path)
         .attr("fill", this.mainFill)
         .attr("id", function (d) {
-          return "ob" + d.properties.OB_ID;
+          return "ob" + d.properties.OB_MID;
         })
         .on("mouseover", function (ev, d) {
           document

@@ -77,10 +77,10 @@ export default {
     this.getTypes();
   },
   watch: {
-      type: function () {
-          this.getYearlyProduce();
-      }
-  }
+    type: function () {
+      this.getYearlyProduce();
+    },
+  },
 };
 </script>
 
