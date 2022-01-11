@@ -1,16 +1,16 @@
 @font-face {
     font-family: OktaNeue;
-    src: url(../fonts/OktaNeueBlack.ttf);
+    src: url("../fonts/OktaNeueBlack.ttf");
     font-weight: bold;
 }
 
 @font-face {
     font-family: OktaNeue;
-    src: url(../fonts/OktaNeueLight.ttf);
+    src: url("../fonts/OktaNeueLight.ttf");
 }
 
 html[data-theme="light"] {
-    --accent: #18d089;
+    --accent: rgb(0, 94, 182);
 
     --font-color: #0b0b15;
     --font-disabled: #777780;
@@ -18,11 +18,20 @@ html[data-theme="light"] {
     --content: #0d0d19;
 
     --bg-00: #fbf7ff;
-    --bg-01: #F4F0F7;
-    --bg-02: #EEEBF0;
-    --bg-03: #E3E1E6;
+    /* --bg-01: #F4F0F7; */
+    /* --bg-02: #EEEBF0; */
+    --bg-01: rgba(50, 50, 50, .05);
+    --bg-02: rgba(50, 50, 50, .08);
+    --bg-03: rgba(50, 50, 50, .11);
+    --bg-04: rgba(50, 50, 50, .14);
+    --bg-05: rgba(50, 50, 50, .17);
+    /* --bg-03: #E3E1E6;
     --bg-04: #D7D4D9;
-    --bg-05: #cac8cc;
+    --bg-05: #cac8cc; */
+
+    --map-hover: rgba(0, 0, 0, .08);
+    --overlay-box: rgba(0, 0, 0, .3);
+    --overlay-box-content: #fbf7ff;
 
     --error: #bd2d2d;
 }
@@ -36,11 +45,20 @@ html[data-theme="dark"] {
     --content: #fbf7ff;
 
     --bg-00: #0d0d19;
-    --bg-01: #191925;
-    --bg-02: #20202b;
-    --bg-03: #282832;
+    /* --bg-01: #191925; */
+    --bg-01: rgba(200, 200, 200, .05);
+    /* --bg-02: #20202b; */
+    --bg-02: rgba(200, 200, 200, .08);
+    --bg-03: rgba(200, 200, 200, .11);
+    --bg-04: rgba(200, 200, 200, .14);
+    --bg-05: rgba(200, 200, 200, .17);
+    /* --bg-03: #282832;
     --bg-04: #2f2f39;
-    --bg-05: #363640;
+    --bg-05: #363640; */
+
+    --map-hover: rgba(255, 255, 255, .08);
+    --overlay-box: rgba(200, 200, 200, .5);
+    --overlay-box-content: #fbf7ff;
 
     --error: #bd2d2d;
 }
