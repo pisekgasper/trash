@@ -154,20 +154,26 @@ export default {
 }
 #Menu {
   position: relative;
+  margin-top: 100px;
   width: 100%;
   height: min-content;
 }
 #Menu li {
   text-align: right;
   border-radius: 7vh 0 0 7vh;
-  padding: 1em 20px;
+  height: 4em;
+  line-height: 4em;
+  padding-right: 1em;
   margin: 10% 0 10% 25%;
-  font-size: 1.5em;
+  font-size: 1.3em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 400;
 }
 .selectedtab {
   background-color: var(--bg-00);
+  transition: all 0.8s cubic-bezier(0.31, 0.68, 0.17, 0.95);
 }
 </style>
  
