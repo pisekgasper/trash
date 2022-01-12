@@ -106,10 +106,10 @@ ORDER BY st_evl DESC;
 /* IZVOZ 2021 */
     SELECT e.obcina_oddaja AS Obcina, SUM(e.kol_kg) as Kolicina 
     FROM evl e 
-    WHERE DATE_PART('year', e.dat_oddaje) = '2021' 
+    WHERE DATE_PART('year', e.dat_oddaje) = '2021' AND e.dat_prejem_zav IS NULL
     GROUP BY e.obcina_oddaja;
-/* UVOZ */
+/* UVOZ */ -- pri uvozu ignoriram zavrnjene
     SELECT e.obcina_prejem AS Obcina, SUM(e.kol_kg) as Kolicina 
     FROM evl e 
-    WHERE DATE_PART('year', e.dat_oddaje) = '2021' 
-    GROUP BY e.obcina_oddaja;
+    WHERE DATE_PART('year', e.dat_oddaje) = '2021' AND e.dat_prejem_zav IS NULL
+    GROUP BY e.obcina_prejem;

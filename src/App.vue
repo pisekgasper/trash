@@ -3,9 +3,21 @@
     <custom-cursor></custom-cursor>
     <aside class="sidebar">
       <div class="theme-switcher-container">
-        <theme-switcher></theme-switcher>
+        <div class="switch-wrapper">
+          <span>Light</span>
+          <label id="switch"
+            ><input type="checkbox" v-model="darkTheme" v-on:change="toggle" />
+            <div></div>
+          </label>
+          <span>Dark</span>
+        </div>
       </div>
-      <img id="FriLogo" src="@/assets/fri_logo.png" />
+      <img class="fri-logo" v-if="darkTheme" src="@/assets/fri_logo.png" />
+      <img
+        class="fri-logo"
+        v-if="!darkTheme"
+        src="@/assets/fri_logo_black.png"
+      />
       <ul id="Menu">
         <li
           v-bind:class="{ selectedtab: selectedTab == 0 }"
@@ -29,9 +41,15 @@
     </aside>
     <main class="main">
       <div class="container">
-        <slovenian-map v-if="selectedTab == 0"></slovenian-map>
-        <trash-type v-if="selectedTab == 1"></trash-type>
-        <personal-number v-if="selectedTab == 2"></personal-number>
+        <keep-alive
+          ><slovenian-map v-if="selectedTab == 0"></slovenian-map
+        ></keep-alive>
+        <keep-alive
+          ><trash-type v-if="selectedTab == 1"></trash-type
+        ></keep-alive>
+        <keep-alive
+          ><personal-number v-if="selectedTab == 2"></personal-number
+        ></keep-alive>
       </div>
     </main>
   </div>
@@ -39,19 +57,19 @@
 
 <script>
 import SlovenianMap from "./components/SlovenianMap.vue";
-import ThemeSwitcher from "./components/ThemeSwitch.vue";
 import CustomCursor from "./components/CustomCursor.vue";
 import TrashType from "./components/TrashType.vue";
 import PersonalNumber from "./components/PersonalNumber.vue";
+import * as d3 from "d3";
 
 export default {
   data() {
     return {
       selectedTab: 0,
+      darkTheme: true,
     };
   },
   components: {
-    ThemeSwitcher,
     SlovenianMap,
     CustomCursor,
     TrashType,
@@ -64,6 +82,18 @@ export default {
   methods: {
     selectTab(i) {
       this.selectedTab = i;
+    },
+    toggle() {
+      const html = document.documentElement;
+      if (this.darkTheme) html.setAttribute("data-theme", "dark");
+      else html.setAttribute("data-theme", "light");
+
+      const accentColor = getComputedStyle(
+        document.documentElement
+      ).getPropertyValue("--accent");
+      const svg = d3.select("#map-svg");
+      svg.select(".regions").selectAll("path").attr("fill", "transparent");
+      svg.select(".regional-borders").attr("stroke", accentColor);
     },
   },
 };
@@ -190,9 +220,53 @@ export default {
   transition: all 0.8s cubic-bezier(0.31, 0.68, 0.17, 0.95);
 }
 
-#FriLogo {
+.fri-logo {
   height: 25vh;
   margin: auto;
+}
+#switch input {
+  position: absolute;
+  opacity: 0;
+}
+
+#switch {
+  display: inline-block;
+  font-size: 15px; /* 1 */
+  height: 1em;
+  width: 2em;
+  background: var(--bg-03);
+  border-radius: 1em;
+  vertical-align: middle;
+}
+
+#switch div {
+  height: 1em;
+  width: 1em;
+  border-radius: 1em;
+  background: var(--accent);
+  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.3);
+  transform: scale(1.1);
+  -webkit-transition: all 100ms ease-out;
+  -moz-transition: all 100ms ease-out;
+  transition: all 100ms ease-out;
+}
+
+#switch input:checked + div {
+  background-color: var(--accent);
+  -webkit-transform: translate3d(100%, 0, 0) scale(1.1);
+  -moz-transform: translate3d(100%, 0, 0) scale(1.1);
+  transform: translate3d(100%, 0, 0) scale(1.1);
+}
+
+.switch-wrapper {
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.switch-wrapper span {
+  padding: 0 10px;
+  font-size: 11px;
+  color: var(--font-disabled);
 }
 </style>
  
