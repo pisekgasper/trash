@@ -126,7 +126,7 @@
               Previous
             </button>
           </li>
-          <li class="page-item">
+          <li class="page-item number">
             <button
               type="button"
               class="page-link"
@@ -294,12 +294,19 @@ button.page-link {
   border-radius: 12px;
   font-weight: 500;
   background-color: var(--bg-02) !important;
-  border-color: var(--bg-02);
+  border: 0.15rem solid var(--bg-02);
+  padding: 0rem 1rem;
+  font-size: 1.3rem;
+}
+
+.pagination .number button {
+  margin: 0 0.3rem;
 }
 
 button.selected {
-  color: var(--accent) !important;
-  border-color: var(--accent);
+  color: var(--bg-00) !important;
+  background-color: var(--accent) !important;
+  border: 0.15rem solid var(--accent);
 }
 
 ul.pagination {
@@ -322,18 +329,6 @@ nav ul {
 
 button:disabled {
   background-color: var(--font-disabled);
-}
-
-.show-modal {
-  font-size: 2rem;
-  font-weight: 600;
-  padding: 1.2rem 2.5rem;
-  margin: 5rem 2rem;
-  border: none;
-  background-color: rgb(92, 22, 139);
-  color: var(--bg-00);
-  border-radius: 0.9rem;
-  cursor: pointer;
 }
 
 .modal {
@@ -364,9 +359,9 @@ button:disabled {
   width: 100%;
   height: 100%;
   border-radius: 4vh;
-  background-color: var(--overlay-box);
+  // background-color: var(--blur-color);
   -webkit-backdrop-filter: blur(55px);
-  backdrop-filter: blur(55px);
+  backdrop-filter: blur(5px);
   z-index: 5;
 }
 
@@ -409,63 +404,6 @@ button.close-modal {
 
 .ind {
   float: right;
-}
-
-// for typeahead
-.simple-typeahead {
-  position: relative;
-  width: 100%;
-}
-.input {
-  margin-bottom: 0;
-  border-radius: 4vh !important;
-  width: 60%;
-}
-
-.simple-typeahead .simple-typeahead-list {
-  position: absolute;
-  width: 100%;
-  border: none;
-  max-height: 400px;
-  overflow-y: auto;
-  border-bottom: 0.1rem solid var(--content);
-  z-index: 9;
-}
-.simple-typeahead .simple-typeahead-list .simple-typeahead-list-header {
-  background-color: var(--bg--02);
-  padding: 0.6rem 1rem;
-  border-bottom: 0.1rem solid var(--content);
-  border-left: 0.1rem solid var(--content);
-  border-right: 0.1rem solid var(--content);
-}
-.simple-typeahead .simple-typeahead-list .simple-typeahead-list-footer {
-  background-color: var(--bg--02);
-  padding: 0.6rem 1rem;
-  border-left: 0.1rem solid var(--content);
-  border-right: 0.1rem solid var(--content);
-}
-.simple-typeahead .simple-typeahead-list .simple-typeahead-list-item {
-  cursor: pointer;
-  background-color: var(--bg--02);
-  padding: 0.6rem 1rem;
-  border-bottom: 0.1rem solid var(--content);
-  border-left: 0.1rem solid var(--content);
-  border-right: 0.1rem solid var(--content);
-}
-.simple-typeahead
-  .simple-typeahead-list
-  .simple-typeahead-list-item:last-child {
-  border-bottom: none;
-}
-.simple-typeahead
-  .simple-typeahead-list
-  .simple-typeahead-list-item.simple-typeahead-list-item-active {
-  background-color: var(--bg--02);
-}
-
-input.simple-typeahead-input {
-  border-color: var(--accent) !important;
-  border-radius: 4vh !important;
 }
 input {
   border-radius: 4vh !important;
