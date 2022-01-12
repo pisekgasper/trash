@@ -4,6 +4,8 @@
     <div class="dot"></div>
     <div id="overlay-box" v-if="showOverlay">
       <span></span>
+      <div class="description"></div>
+      <div class="value"></div>
     </div>
   </div>
 </template>
@@ -149,7 +151,9 @@ export default {
     // transform: scale(0.5);
 
     padding: 2vh 2.2vh;
-    border-radius: 7vh;
+    border-radius: 2vh;
+
+    min-width: 20em;
 
     // transition: opacity 1s easeOut;
     opacity: 0;
@@ -158,9 +162,19 @@ export default {
 
     & span {
       color: var(--overlay-box-content);
-      font-size: 2.2vh;
+      font-size: 1.6rem;
       font-weight: 700;
       white-space: nowrap;
+      text-align: center;
+      display: block;
+      margin-bottom: 1rem;
+    }
+    & div {
+      text-align: center;
+      font-size: 1.2em;
+    }
+    & .value {
+      font-weight: 700;
     }
   }
 }

@@ -1,28 +1,32 @@
 <template>
+  <div class="filter-container">
+    <select name="year" v-model="year" @change="updateMap">
+      <option value="2021">2021</option>
+      <option value="2020">2020</option>
+      <option value="2019">2019</option>
+      <option value="2018">2018</option>
+      <option value="2017">2017</option>
+    </select>
+
+    <div class="radio-group">
+      <input
+        type="radio"
+        id="Import"
+        value="true"
+        v-model="radioModel"
+        @change="updateMap"
+      /><label for="Import">Uvoz</label
+      ><input
+        type="radio"
+        id="Export"
+        value="false"
+        v-model="radioModel"
+        @change="updateMap"
+      /><label for="Export">Izvoz</label>
+    </div>
+  </div>
+
   <svg id="map-svg"></svg>
-  <select name="year" v-model="year" @change="updateMap">
-    <option value="2021">2021</option>
-    <option value="2020">2020</option>
-    <option value="2019">2019</option>
-    <option value="2018">2018</option>
-    <option value="2017">2017</option>
-  </select>
-  <input
-    type="radio"
-    id="Import"
-    value="true"
-    v-model="radioModel"
-    @change="updateMap"
-  />
-  <label for="Import">Uvoz</label>
-  <input
-    type="radio"
-    id="Export"
-    value="false"
-    v-model="radioModel"
-    @change="updateMap"
-  />
-  <label for="Export">Izvoz</label>
 </template>
 
 <script>
@@ -49,6 +53,8 @@ export default {
       heatMap: true,
       year: "2021",
       radioModel: "true",
+      methodEqual: true,
+      municipalityData: null,
     };
   },
   mounted() {
@@ -69,18 +75,6 @@ export default {
 
       query(sql).then(function (response) {
         let colors = [
-          "#590D22",
-          "#800F2F",
-          "#A4133C",
-          "#C9184A",
-          "#FF4D6D",
-          "#FF758F",
-          "#FF8FA3",
-          "#FFB3C1",
-          "#FFCCD5",
-          "#FFF0F3",
-        ];
-        colors = [
           "#e4f1e1",
           "#b4d9cc",
           "#89c0b6",
@@ -89,12 +83,16 @@ export default {
           "#287274",
           "#0d585f",
         ];
-        let colors_reversed = colors;
+        let colors_reversed = colors.reverse();
+
         if (response === "Are you dumb?") {
           deezNutz.heatMap = false;
           console.log("You are dumb, sorry.");
         } else {
           console.log("filtering");
+
+          deezNutz.municipalityData = response;
+
           let filtered = response.filter(
             (x) => parseFloat(x.kg) > 0 && x.obcina !== null
           );
@@ -109,36 +107,41 @@ export default {
             .selectAll("path")
             .attr("fill", "white");
 
-          // method of equal distribution across bins
-          let i = 0;
-          let perBin = filtered.length / colors.length;
-          filtered.forEach((element) => {
-            d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
-              "fill",
-              colors[Math.floor(i / perBin)]
-            );
-            i++;
-          });
+          if (deezNutz.methodEqual) {
+            // method of equal distribution across bins
+            let i = 0;
+            let perBin = filtered.length / colors.length;
+            filtered.forEach((element) => {
+              d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
+                "fill",
+                colors_reversed[Math.floor(i / perBin)]
+              );
+              i++;
+            });
+          } else {
+            // method of non equal distribution
+            let n = colors.length;
+            let max = parseFloat(filtered[0].kg);
+            let min = parseFloat(filtered[filtered.length - 1].kg);
+            let nBins = (max - min + 1) / n;
 
-          // method of non equal distribution
-          let n = colors.length;
-          let max = parseFloat(filtered[1].kg);
-          let min = parseFloat(filtered[filtered.length - 1].kg);
-          let nBins = (max - min + 1) / n;
-
-          filtered.forEach((element) => {
-            d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
-              "fill",
-              colors_reversed[Math.floor((element.kg - min) / nBins)]
-            );
-          });
+            filtered.forEach((element) => {
+              d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
+                "fill",
+                colors[Math.floor((element.kg - min) / nBins)]
+              );
+            });
+          }
         }
       });
     },
     updateMap() {
+      this.resetColors();
       this.generateHeatMap();
     },
-    addHoverListeners() {},
+    resetColors() {
+      this.svg.select(".regions").selectAll("path").attr("fill", "transparent");
+    },
     reset() {
       this.regions.transition().style("fill", null);
       this.svg
@@ -201,6 +204,14 @@ export default {
     handleZoom(e) {
       d3.select("#map-svg .regional-borders").attr("transform", e.transform);
       d3.select("#map-svg g").attr("transform", e.transform);
+    },
+    parseWeight(number) {
+      let x = parseFloat(number);
+      if (x < 1000) return { w: parseInt(x), unit: "kg" };
+      else if (x < 1000000) return { w: parseInt(x / 1000), unit: "ton" };
+      else if (x < 1000000000)
+        return { w: parseInt(x / 1000000), unit: "kiloton" };
+      else return { w: parseInt(x), unit: "kg" };
     },
     draw() {
       this.svg = null;
@@ -288,9 +299,29 @@ export default {
           return "ob" + d.properties.OB_MID;
         })
         .on("mouseover", function (ev, d) {
-          document
-            .getElementById("overlay-box")
-            .querySelector("span").innerHTML = d.properties.OB_UIME;
+          let overlay = document.getElementById("overlay-box");
+          overlay.querySelector("span").innerHTML = d.properties.OB_UIME;
+
+          if (deezNutz.municipalityData !== undefined) {
+            const obj = deezNutz.municipalityData.find(
+              (o) => o.obcina == d.properties.OB_MID
+            );
+            if (obj !== undefined) {
+              let val = overlay.getElementsByClassName("value")[0];
+              let description =
+                overlay.getElementsByClassName("description")[0];
+
+              let weight = deezNutz.parseWeight(obj.kg);
+              val.innerHTML = `${weight.w} ${weight.unit}`;
+              description.innerHTML =
+                deezNutz.radioModel == "true"
+                  ? `Količina uvoženih odpadkov`
+                  : `Količina izvoženih odpadkov`;
+            }
+          } else {
+            console.log("undefinedddd");
+          }
+
           if (!deezNutz.heatMap)
             d3.select(this).attr(
               "fill",
@@ -359,6 +390,7 @@ export default {
   background-color: transparent;
   max-height: 100%;
   border-radius: 4vh;
+  margin-top: 3vh;
 }
 
 .regional-borders {
@@ -370,13 +402,12 @@ html:not(.loaded) #cursor-container .dot {
   opacity: 0;
 }
 
-#overlay-box {
-  position: fixed;
-  z-index: 999;
-  background-color: green;
-  width: 100px;
-  height: 2em;
-  top: 0;
-  left: 0;
+.filter-container {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.radio-group {
+  position: absolute;
 }
 </style>
