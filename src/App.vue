@@ -45,7 +45,7 @@
           ><slovenian-map v-if="selectedTab == 0"></slovenian-map
         ></keep-alive>
         <keep-alive
-          ><trash-type v-if="selectedTab == 1"></trash-type
+          ><trash-type v-if="selectedTab == 1" ref="trashTypes"></trash-type
         ></keep-alive>
         <keep-alive
           ><personal-number v-if="selectedTab == 2"></personal-number

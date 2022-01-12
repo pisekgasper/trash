@@ -3,7 +3,7 @@
     <select class="waste_type" name="type" v-model="type">
       <option v-for="t in all_types" :value="t" :key="t">{{ t }}</option>
     </select>
-    <select name="year" v-model="year">
+    <select class="year" name="year" v-model="year">
       <option value="2021">2021</option>
       <option value="2020">2020</option>
       <option value="2019">2019</option>
@@ -12,7 +12,7 @@
     </select>
   </div>
   <div class="graphs">
-    <column-chart :data="monthly_data"></column-chart>
+    <column-chart :colors="[chartColor]" :data="monthly_data"></column-chart>
   </div>
 </template>
 
@@ -27,6 +27,7 @@ export default {
       all_types: null,
       loading: true,
       monthly_data: null,
+      chartColor: "#3421FF",
     };
   },
   methods: {
@@ -48,28 +49,27 @@ export default {
         });
     },
     getYearlyProduce() {
-      var query =
-        `SELECT DATE_PART('month',dat_oddaje) AS month, sum(kol_kg) AS weight FROM evl WHERE DATE_PART('year',dat_oddaje) = '${this.year}' AND naziv_odpadka LIKE '${this.type}' GROUP BY month;`;
+      var query = `SELECT DATE_PART('month',dat_oddaje) AS month, sum(kol_kg) AS weight FROM evl WHERE DATE_PART('year',dat_oddaje) = '${this.year}' AND naziv_odpadka LIKE '${this.type}' GROUP BY month;`;
 
       http
         .get("/trash", { params: { q: query } })
         .then((response) => {
-            console.log(response)
+          console.log(response);
           this.monthly_data = {};
           var months_slo = {
-              1: "Januar",
-              2: "Februar",
-              3: "Marec",
-              4: "April",
-              5: "Maj",
-              6: "Junij",
-              7: "Julij",
-              8: "Avgust",
-              9: "September",
-              10: "Oktober",
-              11: "November",
-              12: "December"
-          }
+            1: "Januar",
+            2: "Februar",
+            3: "Marec",
+            4: "April",
+            5: "Maj",
+            6: "Junij",
+            7: "Julij",
+            8: "Avgust",
+            9: "September",
+            10: "Oktober",
+            11: "November",
+            12: "December",
+          };
           response.data.forEach((e) => {
             this.monthly_data[months_slo[e.month]] = e.weight;
           });
@@ -82,6 +82,19 @@ export default {
     },
   },
   mounted() {
+    this.chartColor = getComputedStyle(
+      document.documentElement
+    ).getPropertyValue("--accent");
+    document
+      .getElementById("switch")
+      .getElementsByTagName("input")[0]
+      .addEventListener("click", () => {
+        setTimeout(() => {
+          this.chartColor = getComputedStyle(
+            document.documentElement
+          ).getPropertyValue("--accent");
+        }, 100);
+      });
     this.getTypes();
   },
   watch: {
@@ -96,8 +109,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  select.waste_type {
-    width: 100%;
-    max-width: 80%;
-  }
+.graphs {
+  margin-top: 3vh;
+}
+.form {
+  display: inline-flex;
+}
+select.waste_type {
+  width: 100%;
+  max-width: 100%;
+  flex: 1;
+  margin-right: 3vh;
+}
 </style>
