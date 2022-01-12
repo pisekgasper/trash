@@ -60,7 +60,7 @@ import SlovenianMap from "./components/SlovenianMap.vue";
 import CustomCursor from "./components/CustomCursor.vue";
 import TrashType from "./components/TrashType.vue";
 import PersonalNumber from "./components/PersonalNumber.vue";
-import * as d3 from "d3";
+// import * as d3 from "d3";
 
 export default {
   data() {
@@ -88,12 +88,13 @@ export default {
       if (this.darkTheme) html.setAttribute("data-theme", "dark");
       else html.setAttribute("data-theme", "light");
 
-      const accentColor = getComputedStyle(
-        document.documentElement
-      ).getPropertyValue("--accent");
-      const svg = d3.select("#map-svg");
-      svg.select(".regions").selectAll("path").attr("fill", "transparent");
-      svg.select(".regional-borders").attr("stroke", accentColor);
+      // const accentColor = getComputedStyle(
+      //   document.documentElement
+      // ).getPropertyValue("--accent");
+      // const svg = d3.select("#map-svg");
+
+      // svg.select(".regions").selectAll("path").attr("fill", "transparent");
+      // svg.select(".regional-borders").attr("stroke", accentColor);
     },
   },
 };
