@@ -1,6 +1,6 @@
 <template>
   <div class="form">
-    <select name="type" v-model="type">
+    <select class="waste_type" name="type" v-model="type">
       <option v-for="t in all_types" :value="t" :key="t">{{ t }}</option>
     </select>
     <select name="year" v-model="year">
@@ -95,4 +95,9 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+  select.waste_type {
+    width: 100%;
+    max-width: 80%;
+  }
+</style>
