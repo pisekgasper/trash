@@ -18,7 +18,7 @@
     >
     </vue3-simple-typeahead>
     <vue3-simple-typeahead
-      id="find_sender"
+      id="find_receiver"
       placeholder="Išči prejemnika..."
       :items="receivers"
       :itemProjection="
@@ -58,10 +58,23 @@
           :key="p.evl_id"
           @click="openModal = p.evl_id"
         >
+          <p>MATIČNA ŠTEVILKA EVL: {{ p.evl_id }}</p>
           <p>
-            MATIČNA ŠTEVILKA EVL: {{ p.evl_id }}
+            ODDAN:
+            {{
+              new Date(p.dat_oddaje).toLocaleDateString("sl-SI", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })
+            }}
+            <span class="ind"
+              >SPREJETO:
+              <span :style="{ color: p.ind_sprejeto ? 'green' : 'red' }">{{
+                p.ind_sprejeto ? "DA" : "NE"
+              }}</span></span
+            >
           </p>
-          <p>ODDAN: {{ new Date(p.dat_oddaje).toLocaleDateString("sl-SI", {day: "numeric", month: "long", year: "numeric"}) }} <span class="ind">SPREJETO: <span :style="{color: p.ind_sprejeto ? 'green' : 'red'}">{{ p.ind_sprejeto ? "DA" : "NE" }}</span></span></p> 
         </div>
       </div>
       <div
@@ -73,13 +86,30 @@
         <!-- button to close the modal -->
         <button class="close-modal" @click="openModal = 0">&times;</button>
         <h1>EVL matična številka: {{ p.evl_id }}</h1>
-        <p><b>POŠILJATELJ:</b> {{ p.sender_id }} <span style="float: right;"><b>DATUM:</b> {{ new Date(p.dat_oddaje).toLocaleDateString("sl-SI", {day: "numeric", month: "long", year: "numeric"}) }}</span> </p>
+        <p>
+          <b>POŠILJATELJ:</b> {{ p.sender_id }}
+          <span style="float: right"
+            ><b>DATUM:</b>
+            {{
+              new Date(p.dat_oddaje).toLocaleDateString("sl-SI", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })
+            }}</span
+          >
+        </p>
         <p><b>PREJEMNIK:</b> {{ p.receiver_id }}</p>
         <p><b>PREVOZNIK:</b> {{ p.transporter_id }}</p>
-        <br><br>
-        <p><b>TIP ODPADKA:</b> {{ p.naziv_odpadka }} <span style="float: right;"><b>NEVAREN:</b> {{ p.nevaren ? "DA" : "NE" }}</span></p>
+        <br /><br />
+        <p>
+          <b>TIP ODPADKA:</b> {{ p.naziv_odpadka }}
+          <span style="float: right"
+            ><b>NEVAREN:</b> {{ p.nevaren ? "DA" : "NE" }}</span
+          >
+        </p>
         <p><b>IZVOR ODPADKA:</b> {{ p.izvor_odpadka.toLowerCase() }}</p>
-        <br><br>
+        <br /><br />
         <p><b>KOLIČINA:</b> {{ p.kol_kg }} kg</p>
         <p><b>POSTOPEK:</b> {{ p.predviden_postopek }}</p>
       </div>
@@ -103,7 +133,7 @@
               v-for="pageNumber in pages"
               :key="pageNumber"
               @click="page = pageNumber"
-              :class="{selected: page == pageNumber}"
+              :class="{ selected: page == pageNumber }"
             >
               {{ pageNumber }}
             </button>
@@ -242,9 +272,9 @@ export default {
   mounted() {
     document.getElementsByTagName("html")[0].classList.add("loaded");
     this.borderFill = getComputedStyle(
-        document.documentElement
-      ).getPropertyValue("--accent");
-    console.log(this.borderFill)
+      document.documentElement
+    ).getPropertyValue("--accent");
+    console.log(this.borderFill);
     this.getSenders();
     this.getReceivers();
   },
@@ -379,5 +409,65 @@ button.close-modal {
 
 .ind {
   float: right;
+}
+
+// for typeahead
+.simple-typeahead {
+  position: relative;
+  width: 100%;
+}
+.input {
+  margin-bottom: 0;
+  border-radius: 4vh !important;
+  width: 60%;
+}
+
+.simple-typeahead .simple-typeahead-list {
+  position: absolute;
+  width: 100%;
+  border: none;
+  max-height: 400px;
+  overflow-y: auto;
+  border-bottom: 0.1rem solid var(--content);
+  z-index: 9;
+}
+.simple-typeahead .simple-typeahead-list .simple-typeahead-list-header {
+  background-color: var(--bg--02);
+  padding: 0.6rem 1rem;
+  border-bottom: 0.1rem solid var(--content);
+  border-left: 0.1rem solid var(--content);
+  border-right: 0.1rem solid var(--content);
+}
+.simple-typeahead .simple-typeahead-list .simple-typeahead-list-footer {
+  background-color: var(--bg--02);
+  padding: 0.6rem 1rem;
+  border-left: 0.1rem solid var(--content);
+  border-right: 0.1rem solid var(--content);
+}
+.simple-typeahead .simple-typeahead-list .simple-typeahead-list-item {
+  cursor: pointer;
+  background-color: var(--bg--02);
+  padding: 0.6rem 1rem;
+  border-bottom: 0.1rem solid var(--content);
+  border-left: 0.1rem solid var(--content);
+  border-right: 0.1rem solid var(--content);
+}
+.simple-typeahead
+  .simple-typeahead-list
+  .simple-typeahead-list-item:last-child {
+  border-bottom: none;
+}
+.simple-typeahead
+  .simple-typeahead-list
+  .simple-typeahead-list-item.simple-typeahead-list-item-active {
+  background-color: var(--bg--02);
+}
+
+input.simple-typeahead-input {
+  border-color: var(--accent) !important;
+  border-radius: 4vh !important;
+}
+input {
+  border-radius: 4vh !important;
 }
 </style>
