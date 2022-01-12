@@ -170,10 +170,12 @@ export default {
       margin-bottom: 1rem;
     }
     & div {
+      color: var(--overlay-box-content);
       text-align: center;
       font-size: 1.2em;
     }
     & .value {
+      color: var(--overlay-box-content);
       font-weight: 700;
     }
   }
