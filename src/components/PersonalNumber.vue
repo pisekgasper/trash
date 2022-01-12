@@ -34,12 +34,32 @@
       "
     >
     </vue3-simple-typeahead>
+    <select name="month" v-model="month">
+      <option value="0">Mesec...</option>
+      <option value="1">Januar</option>
+      <option value="2">Februar</option>
+      <option value="3">Marec</option>
+      <option value="4">April</option>
+      <option value="5">Maj</option>
+      <option value="6">Junij</option>
+      <option value="7">Julij</option>
+      <option value="8">Avgust</option>
+      <option value="9">September</option>
+      <option value="10">Oktober</option>
+      <option value="11">November</option>
+      <option value="12">December</option>
+    </select>
     <select name="year" v-model="year">
       <option value="2021">2021</option>
       <option value="2020">2020</option>
       <option value="2019">2019</option>
       <option value="2018">2018</option>
       <option value="2017">2017</option>
+    </select>
+    <select name="danger" v-model="dngr">
+      <option value="0">Nevarnost odpadka...</option>
+      <option value="true">DA</option>
+      <option value="false">NE</option>
     </select>
     <input
       type="button"
@@ -49,6 +69,7 @@
     />
   </div>
   <div class="evl_list" v-if="loading || list">
+    <div class="close-list" v-if="list" @click="() => {list = false; loading = false; selected_sender = null}">&lt;</div>
     <p v-if="loading">Loading</p>
     <div class="offset">
       <div class="evls" v-if="list">
@@ -173,12 +194,14 @@ export default {
       receiver_name: null,
       evls: null,
       year: "2021",
+      month: "0",
       loading: false,
       list: false,
       page: 1,
       perPage: 10,
       pages: [],
       openModal: 0,
+      dngr: "0",
     };
   },
   methods: {
@@ -223,11 +246,23 @@ export default {
         });
     },
     getSendersEvl() {
+      var query = `SELECT * FROM evl WHERE sender_id = ${this.selected_sender}`;
       if (this.selected_receiver != null) {
-        var query = `SELECT * FROM evl WHERE sender_id = ${this.selected_sender} AND receiver_id = ${this.selected_receiver} AND DATE_PART('year',dat_oddaje) = '${this.year}' LIMIT 100;`;
-      } else {
-        query = `SELECT * FROM evl WHERE sender_id = ${this.selected_sender} AND DATE_PART('year',dat_oddaje) = '${this.year}' LIMIT 100;`;
+        query = query.concat(`AND receiver_id = ${this.selected_receiver}`);
       }
+      if (this.year != null) {
+        query = query.concat(`AND DATE_PART('year', dat_oddaje) = '${this.year}'`);
+      }
+      if (this.month != "0") {
+        query = query.concat(`AND DATE_PART('month', dat_oddaje) = '${this.month}'`);
+      }
+      if (this.dngr != "0") {
+        //var isTrueSet = (myValue === 'true');
+        query = query.concat(`AND nevaren = ${this.dngr}`);
+      }
+
+      query = query.concat(` LIMIT 100;`);
+
       this.loading = !this.loading;
       console.log(query);
       http
@@ -251,6 +286,7 @@ export default {
         });
     },
     setPages() {
+      this.pages = [];
       let numberOfPages = Math.ceil(this.evls.length / this.perPage);
       for (let index = 1; index <= numberOfPages; index++) {
         this.pages.push(index);
@@ -282,6 +318,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
 .page-item {
   display: flex;
 }
@@ -370,6 +407,16 @@ button:disabled {
   top: 0.8rem;
   right: 1.3rem;
   font-size: 2.5rem;
+  color: var(--accent);
+  cursor: pointer;
+  border: none;
+}
+
+.close-list {
+  position: absolute;
+  top: 1.8rem;
+  right: 4.3rem;
+  font-size: 3.5rem;
   color: var(--accent);
   cursor: pointer;
   border: none;
