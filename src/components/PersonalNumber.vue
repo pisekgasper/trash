@@ -51,27 +51,37 @@
   <div class="evl_list" v-if="loading || list">
     <p v-if="loading">Loading</p>
     <div class="offset">
-      <table class="table table-bordered" v-if="list">
-        <thead>
-          <tr>
-            <th>ID evl</th>
-            <th>ID pošiljatelja</th>
-            <th>Datum oddaje</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="p in displayedEvls" :key="p.evl_id" @click="openModal = p.evl_id">
-            <td>{{ p.evl_id }}</td>
-            <td>{{ p.sender_id }}</td>
-            <td>{{ p.dat_oddaje }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-for="p in displayedEvls" :key="p.evl_id" :class="{modal: true, hidden: openModal != p.evl_id}" id="{{p.evl_id}}">
-          <!-- button to close the modal -->
-          <button class="close-modal" @click="openModal = 0">&times;</button>
-          <p>Vpisan: {{ p.dat_oddaje }}</p>
-          <p>Tip odpadka: {{ p.naziv_odpadka }}</p>
+      <div class="evls" v-if="list">
+        <div
+          class="evl_card"
+          v-for="p in displayedEvls"
+          :key="p.evl_id"
+          @click="openModal = p.evl_id"
+        >
+          <p>
+            MATIČNA ŠTEVILKA EVL: {{ p.evl_id }}
+          </p>
+          <p>ODDAN: {{ new Date(p.dat_oddaje).toLocaleDateString("sl-SI", {day: "numeric", month: "long", year: "numeric"}) }} <span class="ind">SPREJETO: <span :style="{color: p.ind_sprejeto ? 'green' : 'red'}">{{ p.ind_sprejeto ? "DA" : "NE" }}</span></span></p> 
+        </div>
+      </div>
+      <div
+        v-for="p in displayedEvls"
+        :key="p.evl_id"
+        :class="{ modal: true, hidden: openModal != p.evl_id }"
+        id="{{p.evl_id}}"
+      >
+        <!-- button to close the modal -->
+        <button class="close-modal" @click="openModal = 0">&times;</button>
+        <h1>EVL matična številka: {{ p.evl_id }}</h1>
+        <p><b>POŠILJATELJ:</b> {{ p.sender_id }} <span style="float: right;"><b>DATUM:</b> {{ new Date(p.dat_oddaje).toLocaleDateString("sl-SI", {day: "numeric", month: "long", year: "numeric"}) }}</span> </p>
+        <p><b>PREJEMNIK:</b> {{ p.receiver_id }}</p>
+        <p><b>PREVOZNIK:</b> {{ p.transporter_id }}</p>
+        <br><br>
+        <p><b>TIP ODPADKA:</b> {{ p.naziv_odpadka }} <span style="float: right;"><b>NEVAREN:</b> {{ p.nevaren ? "DA" : "NE" }}</span></p>
+        <p><b>IZVOR ODPADKA:</b> {{ p.izvor_odpadka.toLowerCase() }}</p>
+        <br><br>
+        <p><b>KOLIČINA:</b> {{ p.kol_kg }} kg</p>
+        <p><b>POSTOPEK:</b> {{ p.predviden_postopek }}</p>
       </div>
 
       <nav aria-label="Page navigation example" v-if="list">
@@ -93,7 +103,7 @@
               v-for="pageNumber in pages"
               :key="pageNumber"
               @click="page = pageNumber"
-              :style="{ color: page == pageNumber ? 'green' : 'white' }"
+              :class="{selected: page == pageNumber}"
             >
               {{ pageNumber }}
             </button>
@@ -112,7 +122,11 @@
       </nav>
     </div>
   </div>
-  <div :class="{overlay: true, hidden: openModal == 0}" @click="openModal = 0"></div>
+  <div
+    v-if="list"
+    :class="{ overlay: true, hidden: openModal == 0 }"
+    @click="openModal = 0"
+  ></div>
 </template>
 
 <script>
@@ -134,7 +148,7 @@ export default {
       page: 1,
       perPage: 10,
       pages: [],
-      openModal: true,
+      openModal: 0,
     };
   },
   methods: {
@@ -226,6 +240,11 @@ export default {
     },
   },
   mounted() {
+    document.getElementsByTagName("html")[0].classList.add("loaded");
+    this.borderFill = getComputedStyle(
+        document.documentElement
+      ).getPropertyValue("--accent");
+    console.log(this.borderFill)
     this.getSenders();
     this.getReceivers();
   },
@@ -233,13 +252,46 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.page-item {
+  display: flex;
+}
 button.page-link {
-  display: inline-block;
+  display: inline;
 }
 button.page-link {
   font-size: 20px;
-  color: #29b3ed;
+  color: var(--content);
+  border-radius: 12px;
   font-weight: 500;
+  background-color: var(--bg-02) !important;
+  border-color: var(--bg-02);
+}
+
+button.selected {
+  color: var(--accent) !important;
+  border-color: var(--accent);
+}
+
+ul.pagination {
+  width: 80% !important;
+  margin: 0 auto !important;
+}
+
+.pagination li {
+  display: flex;
+}
+
+nav {
+  padding-top: 12px;
+}
+
+nav ul {
+  display: flex;
+  justify-content: space-between;
+}
+
+button:disabled {
+  background-color: var(--font-disabled);
 }
 
 .show-modal {
@@ -249,7 +301,7 @@ button.page-link {
   margin: 5rem 2rem;
   border: none;
   background-color: rgb(92, 22, 139);
-  color: rgb(241, 241, 241);
+  color: var(--bg-00);
   border-radius: 0.9rem;
   cursor: pointer;
 }
@@ -261,19 +313,19 @@ button.page-link {
   transform: translate(-50%, -50%);
   width: 80%;
   max-width: 500px;
-  background-color: white;
+  background-color: var(--bg-00);
   padding: 4rem;
   border-radius: 20px;
   box-shadow: 0 3rem 5rem rgba(0, 0, 0, 0.3);
   z-index: 10;
-  text-align: center;
+  //text-align: center;
 }
 
 .modal h1 {
   font-size: 1.8rem;
   margin-bottom: 2rem;
+  color: var(--content);
 }
-
 
 .overlay {
   position: absolute;
@@ -282,7 +334,7 @@ button.page-link {
   width: 100%;
   height: 100%;
   border-radius: 50px;
-  background-color: rgba(255, 255, 255, 0.6);
+  background-color: var(--overlay-box);
   -webkit-backdrop-filter: blur(55px);
   backdrop-filter: blur(55px);
   z-index: 5;
@@ -293,10 +345,13 @@ button.page-link {
   top: 0.8rem;
   right: 1.3rem;
   font-size: 2.5rem;
-  color: #333;
+  color: var(--accent);
   cursor: pointer;
   border: none;
-  background: none;
+}
+
+button.close-modal {
+  background-color: var(--bg-00) !important;
 }
 
 /* CLASS TO HIDE MODAL */
@@ -304,4 +359,25 @@ button.page-link {
   display: none;
 }
 
+.evls {
+  margin: 0 auto;
+  width: 80%;
+}
+
+.evl_card {
+  padding: 1rem;
+  border-color: var(--bg-02);
+  border-radius: 20px;
+  border-style: solid;
+  border-width: 0 1px 1px 1px;
+}
+
+.evl_card:hover {
+  cursor: pointer;
+  background-color: var(--bg-03);
+}
+
+.ind {
+  float: right;
+}
 </style>
