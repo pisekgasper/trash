@@ -42,6 +42,7 @@ export default {
             this.all_types.push(e.type);
           });
           console.log(this.all_types);
+          localStorage.wasteTypes = JSON.stringify(this.all_types);
         })
         .catch((e) => {
           console.log(e);
@@ -73,6 +74,12 @@ export default {
           response.data.forEach((e) => {
             this.monthly_data[months_slo[e.month]] = e.weight;
           });
+          for (const [_, value] of Object.entries(months_slo)) {
+            if (this.monthly_data[value] == null) {
+              this.monthly_data[value] = 0;
+              console.log(_)
+            }
+          }
           console.log(this.monthly_data);
         })
         .catch((e) => {
@@ -95,7 +102,11 @@ export default {
           ).getPropertyValue("--accent");
         }, 100);
       });
-    this.getTypes();
+    if (localStorage.wasteTypes) {
+      this.all_types = JSON.parse(localStorage.wasteTypes);
+    } else {
+      this.getTypes();
+    }
   },
   watch: {
     type: function () {
