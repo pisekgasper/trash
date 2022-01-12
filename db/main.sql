@@ -71,7 +71,7 @@ CREATE TABLE ulice (
 );
 
 
-UPDATE evl e1 SET obcina_oddaja = (SELECT o.id from evl e, obcine o, ulice u, naselja n WHERE LOWER(e.lokacija_oddaje) LIKE LOWER(u.name) || '%' AND LOWER(e.lokacija_oddaje) LIKE '%' || LOWER(n.name) AND u.o_id = o.id AND n.o_id = o.id AND e.evl_id = e1.evl_id LIMIT 1);
+UPDATE evl e1 SET obcina_oddaja = (SELECT o.id from evl e, obcine o, ulice u, naselja n WHERE LOWER(e.lokacija_oddaje) LIKE LOWER(u.name) || '%' AND LOWER(e.lokacija_oddaje) LIKE '%' || LOWER(n.name) AND u.o_id = o.id AND n.o_id = o.id AND e.evl_id = e1.evl_id LIMIT 1) WHERE e1.lokacija_oddaje IS NOT NULL AND e1.evl_id IN (SELECT evl_id FROM evl WHERE obcina_oddaja IS NULL LIMIT 100000);
 
 /* poizvedba za tezo po mesecih v nekem letu */
 SELECT DATE_PART('month',dat_oddaje) AS  mesec,

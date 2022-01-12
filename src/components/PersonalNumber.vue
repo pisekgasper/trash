@@ -60,14 +60,21 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="p in displayedEvls" :key="p.evl_id">
+          <tr v-for="p in displayedEvls" :key="p.evl_id" @click="openModal = p.evl_id">
             <td>{{ p.evl_id }}</td>
             <td>{{ p.sender_id }}</td>
             <td>{{ p.dat_oddaje }}</td>
           </tr>
         </tbody>
       </table>
-      <nav aria-label="Page navigation example">
+      <div v-for="p in displayedEvls" :key="p.evl_id" :class="{modal: true, hidden: openModal != p.evl_id}" id="{{p.evl_id}}">
+          <!-- button to close the modal -->
+          <button class="close-modal" @click="openModal = 0">&times;</button>
+          <p>Vpisan: {{ p.dat_oddaje }}</p>
+          <p>Tip odpadka: {{ p.naziv_odpadka }}</p>
+      </div>
+
+      <nav aria-label="Page navigation example" v-if="list">
         <ul class="pagination">
           <li class="page-item">
             <button
@@ -83,10 +90,10 @@
             <button
               type="button"
               class="page-link"
-              v-for="pageNumber in pages.slice(page - 1, page + 4)"
+              v-for="pageNumber in pages"
               :key="pageNumber"
               @click="page = pageNumber"
-              :style="{ color: page == pageNumber ? 'red' : 'green' }"
+              :style="{ color: page == pageNumber ? 'green' : 'white' }"
             >
               {{ pageNumber }}
             </button>
@@ -105,6 +112,7 @@
       </nav>
     </div>
   </div>
+  <div :class="{overlay: true, hidden: openModal == 0}" @click="openModal = 0"></div>
 </template>
 
 <script>
@@ -124,8 +132,9 @@ export default {
       loading: false,
       list: false,
       page: 1,
-      perPage: 9,
+      perPage: 10,
       pages: [],
+      openModal: true,
     };
   },
   methods: {
@@ -171,9 +180,9 @@ export default {
     },
     getSendersEvl() {
       if (this.selected_receiver != null) {
-        var query = `SELECT * FROM evl WHERE sender_id = ${this.selected_sender} AND receiver_id = ${this.selected_receiver} AND DATE_PART('year',dat_oddaje) = '${this.year}';`;
+        var query = `SELECT * FROM evl WHERE sender_id = ${this.selected_sender} AND receiver_id = ${this.selected_receiver} AND DATE_PART('year',dat_oddaje) = '${this.year}' LIMIT 100;`;
       } else {
-        query = `SELECT * FROM evl WHERE sender_id = ${this.selected_sender} AND DATE_PART('year',dat_oddaje) = '${this.year}';`;
+        query = `SELECT * FROM evl WHERE sender_id = ${this.selected_sender} AND DATE_PART('year',dat_oddaje) = '${this.year}' LIMIT 100;`;
       }
       this.loading = !this.loading;
       console.log(query);
@@ -225,11 +234,74 @@ export default {
 
 <style lang="scss" scoped>
 button.page-link {
-	display: inline-block;
+  display: inline-block;
 }
 button.page-link {
-    font-size: 20px;
-    color: #29b3ed;
-    font-weight: 500;
+  font-size: 20px;
+  color: #29b3ed;
+  font-weight: 500;
 }
+
+.show-modal {
+  font-size: 2rem;
+  font-weight: 600;
+  padding: 1.2rem 2.5rem;
+  margin: 5rem 2rem;
+  border: none;
+  background-color: rgb(92, 22, 139);
+  color: rgb(241, 241, 241);
+  border-radius: 0.9rem;
+  cursor: pointer;
+}
+
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 500px;
+  background-color: white;
+  padding: 4rem;
+  border-radius: 20px;
+  box-shadow: 0 3rem 5rem rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  text-align: center;
+}
+
+.modal h1 {
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+}
+
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  background-color: rgba(255, 255, 255, 0.6);
+  -webkit-backdrop-filter: blur(55px);
+  backdrop-filter: blur(55px);
+  z-index: 5;
+}
+
+.close-modal {
+  position: absolute;
+  top: 0.8rem;
+  right: 1.3rem;
+  font-size: 2.5rem;
+  color: #333;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* CLASS TO HIDE MODAL */
+.hidden {
+  display: none;
+}
+
 </style>

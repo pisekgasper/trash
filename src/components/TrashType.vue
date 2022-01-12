@@ -88,6 +88,9 @@ export default {
     type: function () {
       this.getYearlyProduce();
     },
+    year: function () {
+      this.getYearlyProduce();
+    },
   },
 };
 </script>
