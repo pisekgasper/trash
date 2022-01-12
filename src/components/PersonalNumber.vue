@@ -333,7 +333,7 @@ button:disabled {
   left: 0;
   width: 100%;
   height: 100%;
-  border-radius: 50px;
+  border-radius: 4vh;
   background-color: var(--overlay-box);
   -webkit-backdrop-filter: blur(55px);
   backdrop-filter: blur(55px);

@@ -11,5 +11,9 @@ const app = createApp(App);
 // functionality
 app.use(router).use(VueChartkick).use(SimpleTypeahead);
 
+VueChartkick.options = {
+    colors: ['#444444']
+}
+
 // mounting
 app.mount("#app");
