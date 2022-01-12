@@ -71,7 +71,9 @@ CREATE TABLE ulice (
 );
 
 
-UPDATE evl e1 SET obcina_oddaja = (SELECT o.id from evl e, obcine o, ulice u, naselja n WHERE LOWER(e.lokacija_oddaje) LIKE LOWER(u.name) || '%' AND LOWER(e.lokacija_oddaje) LIKE '%' || LOWER(n.name) AND u.o_id = o.id AND n.o_id = o.id AND e.evl_id = e1.evl_id LIMIT 1) WHERE e1.lokacija_oddaje IS NOT NULL AND e1.evl_id IN (SELECT evl_id FROM evl WHERE obcina_oddaja IS NULL LIMIT 100000);
+UPDATE evl e1 SET obcina_oddaja = (SELECT o.id from evl e, obcine o, ulice u, naselja n WHERE LOWER(e.lokacija_oddaje) LIKE LOWER(u.name) || '%' AND LOWER(e.lokacija_oddaje) LIKE '%' || LOWER(n.name) AND u.o_id = o.id AND n.o_id = o.id AND e.evl_id = e1.evl_id LIMIT 1) WHERE e1.obcina_oddaja IS NULL AND DATE_PART('year', e1.dat_oddaje) = '2021' AND e1.lokacija_oddaje IS NOT NULL AND e1.evl_id IN (SELECT evl_id FROM evl WHERE obcina_oddaja IS NULL LIMIT 10000);
+
+UPDATE evl e1 SET obcina_prejem = (SELECT o.id from evl e, obcine o, ulice u, naselja n WHERE LOWER(e.lokacija_prejema) LIKE LOWER(u.name) || '%' AND LOWER(e.lokacija_prejema) LIKE '%' || LOWER(n.name) AND u.o_id = o.id AND n.o_id = o.id AND e.evl_id = e1.evl_id LIMIT 1) WHERE e1.obcina_prejem IS NULL AND DATE_PART('year', e1.dat_oddaje) = '2021' AND e1.lokacija_prejema IS NOT NULL AND e1.evl_id IN (SELECT evl_id FROM evl WHERE obcina_prejem IS NULL AND lokacija_prejema IS NOT NULL AND DATE_PART('year', dat_oddaje) = '2021' LIMIT 10000);
 
 /* poizvedba za tezo po mesecih v nekem letu */
 SELECT DATE_PART('month',dat_oddaje) AS  mesec,
