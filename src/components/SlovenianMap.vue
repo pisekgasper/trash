@@ -1,12 +1,35 @@
 <template>
   <svg id="map-svg"></svg>
+  <select name="year" v-model="year" @change="updateMap">
+    <option value="2021">2021</option>
+    <option value="2020">2020</option>
+    <option value="2019">2019</option>
+    <option value="2018">2018</option>
+    <option value="2017">2017</option>
+  </select>
+  <input
+    type="radio"
+    id="Import"
+    value="true"
+    v-model="radioModel"
+    @change="updateMap"
+  />
+  <label for="Import">Uvoz</label>
+  <input
+    type="radio"
+    id="Export"
+    value="false"
+    v-model="radioModel"
+    @change="updateMap"
+  />
+  <label for="Export">Izvoz</label>
 </template>
 
 <script>
 import * as d3 from "d3";
 import * as topojson from "topojson";
 import geoJsonOB from "../assets/geojson/OB_topo.json";
-// import http from "../http-common";
+import query from "../helpers/query";
 // import anime from "animejs/lib/anime.es.js";
 // import promiseAnime from "../helpers/animewaiter";
 
@@ -23,32 +46,99 @@ export default {
       mainFill: null,
       borderFill: null,
       regionClicked: null,
+      heatMap: true,
+      year: "2021",
+      radioModel: "true",
     };
   },
   mounted() {
     document.getElementsByTagName("html")[0].classList.add("loaded");
     this.$nextTick().then(() => {
       this.draw();
+      this.generateHeatMap();
     });
   },
   methods: {
-    // generateHeatMap() {
-    //   var query = "SELECT DISTINCT naziv_odpadka AS type FROM evl;";
-    //   console.log(query);
-    //   http
-    //     .get("/trash", { params: { q: query } })
-    //     .then((response) => {
-    //       this.all_types = [];
-    //       response.data.forEach((e) => {
-    //         this.all_types.push(e.type);
-    //       });
-    //       console.log(this.all_types);
-    //     })
-    //     .catch((e) => {
-    //       console.log(e);
-    //       this.loading = false;
-    //     });
-    // },
+    generateHeatMap() {
+      var sql =
+        this.radioModel == "true"
+          ? `SELECT e.obcina_prejem AS obcina, COALESCE(SUM(e.kol_kg), 0) AS kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NOT NULL GROUP BY e.obcina_prejem ORDER BY kg DESC;`
+          : `SELECT e.obcina_oddaja AS obcina, COALESCE(SUM(e.kol_kg), 0) AS kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NOT NULL GROUP BY e.obcina_oddaja ORDER BY kg DESC;`;
+
+      let deezNutz = this;
+
+      query(sql).then(function (response) {
+        let colors = [
+          "#590D22",
+          "#800F2F",
+          "#A4133C",
+          "#C9184A",
+          "#FF4D6D",
+          "#FF758F",
+          "#FF8FA3",
+          "#FFB3C1",
+          "#FFCCD5",
+          "#FFF0F3",
+        ];
+        colors = [
+          "#e4f1e1",
+          "#b4d9cc",
+          "#89c0b6",
+          "#63a6a0",
+          "#448c8a",
+          "#287274",
+          "#0d585f",
+        ];
+        let colors_reversed = colors;
+        if (response === "Are you dumb?") {
+          deezNutz.heatMap = false;
+          console.log("You are dumb, sorry.");
+        } else {
+          console.log("filtering");
+          let filtered = response.filter(
+            (x) => parseFloat(x.kg) > 0 && x.obcina !== null
+          );
+          if (filtered.length === 0) {
+            deezNutz.heatMap = false;
+            return;
+          }
+
+          deezNutz.heatMap = true;
+
+          d3.select(`#map-svg .regions`)
+            .selectAll("path")
+            .attr("fill", "white");
+
+          // method of equal distribution across bins
+          let i = 0;
+          let perBin = filtered.length / colors.length;
+          filtered.forEach((element) => {
+            d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
+              "fill",
+              colors[Math.floor(i / perBin)]
+            );
+            i++;
+          });
+
+          // method of non equal distribution
+          let n = colors.length;
+          let max = parseFloat(filtered[1].kg);
+          let min = parseFloat(filtered[filtered.length - 1].kg);
+          let nBins = (max - min + 1) / n;
+
+          filtered.forEach((element) => {
+            d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
+              "fill",
+              colors_reversed[Math.floor((element.kg - min) / nBins)]
+            );
+          });
+        }
+      });
+    },
+    updateMap() {
+      this.generateHeatMap();
+    },
+    addHoverListeners() {},
     reset() {
       this.regions.transition().style("fill", null);
       this.svg
@@ -146,6 +236,8 @@ export default {
         ])
         .on("zoom", this.handleZoom);
 
+      let deezNutz = this;
+
       this.svg
         .append("g")
         .attr("class", "regions")
@@ -199,21 +291,23 @@ export default {
           document
             .getElementById("overlay-box")
             .querySelector("span").innerHTML = d.properties.OB_UIME;
-          d3.select(this).attr(
-            "fill",
-            getComputedStyle(document.documentElement).getPropertyValue(
-              "--map-hover"
-            )
-          );
+          if (!deezNutz.heatMap)
+            d3.select(this).attr(
+              "fill",
+              getComputedStyle(document.documentElement).getPropertyValue(
+                "--map-hover"
+              )
+            );
         })
         .on("mouseout", function () {
-          d3.select(this).attr(
-            "fill",
-            "transparent"
-            // getComputedStyle(document.documentElement).getPropertyValue(
-            //   "--bg-02"
-            // )
-          );
+          if (!deezNutz.heatMap)
+            d3.select(this).attr(
+              "fill",
+              "transparent"
+              // getComputedStyle(document.documentElement).getPropertyValue(
+              //   "--bg-02"
+              // )
+            );
         })
         .on("click", this.clicked);
 

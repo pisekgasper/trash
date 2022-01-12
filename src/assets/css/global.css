@@ -97,6 +97,12 @@ body {
     transition-timing-function: cubic-bezier(.31,.68,.17,.95);
 }
 
+select, option, input {
+    background-color: var(--bg--02);
+    color: var(--content);
+    border-color: var(--content);
+}
+
 button {
     height: min-content !important;
     padding: 0 20px;
