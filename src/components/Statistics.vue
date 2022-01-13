@@ -6,11 +6,12 @@
         ytitle="Teža v Mt"
         :stacked="true"
         :data="weight_Y"
+        :sufix="'milijon ton'"
       ></column-chart>
     </div>
     <div class="chart2">
       <h1>PET NAJBOLJ POGOSTIH POSTOPKOV</h1>
-      <column-chart :colors="[chartColor]" :data="process"></column-chart>
+      <column-chart :legend="true" :colors="[chartColor]" :data="process"></column-chart>
     </div>
     <div class="chart3"></div>
     <div class="chart4"></div>
