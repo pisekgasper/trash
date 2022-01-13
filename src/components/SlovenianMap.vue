@@ -29,16 +29,18 @@
   <svg id="map-svg"></svg>
   <div id="Overlay" v-if="showGraph" @click="hideGraph"></div>
   <div id="GraphBox" v-if="showGraph">
-    <p class="heading">
-      Količina {{ radioModel == "import" ? "uvoza" : "izvoza" }} po mesecih -
-      {{ regionClickedName }}
-    </p>
-    <column-chart
-      ytitle="Teža v kt (kilotona)"
-      :suffix="' kilo ton'"
-      :colors="[borderFill]"
-      :data="radioModel == 'import' ? chartDataReceiver : chartDataSender"
-    ></column-chart>
+    <div class="kontejner">
+      <p class="heading">
+        Količina {{ radioModel == "import" ? "uvoza" : "izvoza" }} po mesecih -
+        {{ regionClickedName }}
+      </p>
+      <column-chart
+        ytitle="Teža v kt (kilotona)"
+        :suffix="' kt'"
+        :colors="[borderFill]"
+        :data="radioModel == 'import' ? chartDataReceiver : chartDataSender"
+      ></column-chart>
+    </div>
   </div>
 </template>
 
@@ -847,13 +849,20 @@ html:not(.loaded) #cursor-container .dot {
   -webkit-backdrop-filter: blur(55px);
   backdrop-filter: blur(5px);
 }
-#GraphBox div {
+#Overlay .kontejner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#GraphBox .kontejner div {
   position: absolute;
   padding: 0 4rem;
   height: max-content;
+  min-height: 65%;
   max-height: 65%;
 }
-#GraphBox p {
+#GraphBox .kontejner p {
   font-weight: 700;
   text-align: center;
   margin-bottom: 2rem;

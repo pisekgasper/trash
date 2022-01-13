@@ -195,7 +195,16 @@ export default {
     justify-content: center
     flex-direction: column
     padding-top: 2vh
+    max-width: 90%
+    max-height: 75%
+    min-width: 90%
+    margin: auto
 
   .chart1 .chart2
-    padding-top: 1vh
+    margin: 25px
+
+h1
+  font-size: 1.6rem
+  text-align: center
+  padding: 2vh 0
 </style>
