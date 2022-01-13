@@ -198,17 +198,21 @@ export default {
   margin-top: 5vh;
   width: 100%;
   height: min-content;
+  text-align: right;
 }
 #Menu li {
-  text-align: right;
+  float: right;
   border-radius: 7vh 0 0 7vh;
   height: 4em;
   line-height: 4em;
-  padding-right: 1em;
-  margin: 10% 0 10% 25%;
+  padding-right: 2em;
+  padding-left: 2em;
+  margin: 1rem 0;
+  width: min-content;
+  white-space: nowrap;
   font-size: 1.3em;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.2em;
   cursor: pointer;
   font-weight: 400;
 }

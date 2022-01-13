@@ -1,13 +1,5 @@
 <template>
   <div class="filter-container">
-    <select name="year" v-model="year" @change="updateMap">
-      <option value="2021">2021</option>
-      <option value="2020">2020</option>
-      <option value="2019">2019</option>
-      <option value="2018">2018</option>
-      <option value="2017">2017</option>
-    </select>
-
     <div class="radio-group">
       <input
         type="radio"
@@ -24,6 +16,14 @@
         @change="updateMap"
       /><label for="Export">Izvoz</label>
     </div>
+    <span class="label">Leto</span>
+    <select name="year" v-model="year" @change="updateMap">
+      <option value="2021">2021</option>
+      <option value="2020">2020</option>
+      <option value="2019">2019</option>
+      <option value="2018">2018</option>
+      <option value="2017">2017</option>
+    </select>
   </div>
 
   <svg id="map-svg"></svg>
@@ -54,9 +54,27 @@ export default {
       heatMap: true,
       year: "2021",
       radioModel: "import",
-      methodEqual: true,
+      methodEqual: false,
       municipalityDataExport: null,
       municipalityDataImport: null,
+      colorsDark: [
+        "#e4f1e1",
+        "#b4d9cc",
+        "#89c0b6",
+        "#63a6a0",
+        "#448c8a",
+        "#287274",
+        "#0d585f",
+      ],
+      colorsLight: [
+        "#f3e0f7",
+        "#e4c7f1",
+        "#d1afe8",
+        "#b998dd",
+        "#9f82ce",
+        "#826dba",
+        "#63589f",
+      ],
     };
   },
   mounted() {
@@ -91,12 +109,9 @@ export default {
   },
   watch: {
     municipalityDataExport(newData) {
-      console.log("updating export");
       localStorage.municipalityDataExport = JSON.stringify(newData);
     },
     municipalityDataImport(newData) {
-      console.log("updating import");
-
       localStorage.municipalityDataImport = JSON.stringify(newData);
     },
   },
@@ -105,27 +120,6 @@ export default {
       this.theme = document.documentElement.getAttribute("data-theme");
     },
     generateHeatMap() {
-      let colors = [
-        "#e4f1e1",
-        "#b4d9cc",
-        "#89c0b6",
-        "#63a6a0",
-        "#448c8a",
-        "#287274",
-        "#0d585f",
-      ];
-      let colors_light = [
-        "#f3e0f7",
-        "#e4c7f1",
-        "#d1afe8",
-        "#b998dd",
-        "#9f82ce",
-        "#826dba",
-        "#63589f",
-      ];
-      let colors_reversed = colors.reverse();
-      let colors_light_reversed = colors_light.reverse();
-
       var sql =
         this.radioModel == "import"
           ? `SELECT e.obcina_prejem AS obcina, COALESCE(SUM(e.kol_kg), 0) AS kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NOT NULL GROUP BY e.obcina_prejem ORDER BY kg DESC;`
@@ -138,9 +132,12 @@ export default {
           this.municipalityDataImport = JSON.parse(
             localStorage.municipalityDataImport
           );
-          let filtered = this.municipalityDataImport.filter(
+          let filteredd = this.municipalityDataImport.filter(
             (x) => parseFloat(x.kg) > 0 && x.obcina !== null
           );
+          let filtered = filteredd.map(function (obj) {
+            return { obcina: obj.obcina, kg: parseFloat(Math.log(obj.kg)) };
+          });
 
           if (filtered.length === 0) {
             deezNutz.heatMap = false;
@@ -156,29 +153,28 @@ export default {
           if (deezNutz.methodEqual) {
             // method of equal distribution across bins
             let i = 0;
-            let perBin = filtered.length / colors.length;
+            let perBin = filtered.length / deezNutz.colorsDark.length;
             filtered.forEach((element) => {
               d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                 "fill",
                 deezNutz.theme == "light"
-                  ? colors_light_reversed[Math.floor(i / perBin)]
-                  : colors_reversed[Math.floor(i / perBin)]
+                  ? deezNutz.colorsLight[Math.floor(i / perBin)]
+                  : deezNutz.colorsDark[Math.floor(i / perBin)]
               );
               i++;
             });
           } else {
             // method of non equal distribution
-            let n = colors.length;
+            let n = deezNutz.colorsDark.length;
             let max = parseFloat(filtered[0].kg);
             let min = parseFloat(filtered[filtered.length - 1].kg);
             let nBins = (max - min + 1) / n;
-
             filtered.forEach((element) => {
               d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                 "fill",
                 deezNutz.theme == "light"
-                  ? colors_light[Math.floor((element.kg - min) / nBins)]
-                  : colors[Math.floor((element.kg - min) / nBins)]
+                  ? deezNutz.colorsLight[Math.floor((element.kg - min) / nBins)]
+                  : deezNutz.colorsDark[Math.floor((element.kg - min) / nBins)]
               );
             });
           }
@@ -188,13 +184,14 @@ export default {
               deezNutz.heatMap = false;
               console.log("You are dumb, sorry.");
             } else {
-              console.log("filtering");
-
               deezNutz.municipalityDataImport = response;
 
-              let filtered = response.filter(
+              let filteredd = response.filter(
                 (x) => parseFloat(x.kg) > 0 && x.obcina !== null
               );
+              let filtered = filteredd.map(function (obj) {
+                return { obcina: obj.obcina, kg: parseFloat(Math.log(obj.kg)) };
+              });
               if (filtered.length === 0) {
                 deezNutz.heatMap = false;
                 return;
@@ -209,19 +206,19 @@ export default {
               if (deezNutz.methodEqual) {
                 // method of equal distribution across bins
                 let i = 0;
-                let perBin = filtered.length / colors.length;
+                let perBin = filtered.length / deezNutz.colorsDark.length;
                 filtered.forEach((element) => {
                   d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                     "fill",
                     deezNutz.theme == "light"
-                      ? colors_light_reversed[Math.floor(i / perBin)]
-                      : colors_reversed[Math.floor(i / perBin)]
+                      ? this.colorsLight[Math.floor(i / perBin)]
+                      : deezNutz.colorsDark[Math.floor(i / perBin)]
                   );
                   i++;
                 });
               } else {
                 // method of non equal distribution
-                let n = colors.length;
+                let n = deezNutz.colorsDark.length;
                 let max = parseFloat(filtered[0].kg);
                 let min = parseFloat(filtered[filtered.length - 1].kg);
                 let nBins = (max - min + 1) / n;
@@ -230,8 +227,10 @@ export default {
                   d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                     "fill",
                     deezNutz.theme == "light"
-                      ? colors_light[Math.floor((element.kg - min) / nBins)]
-                      : colors[Math.floor((element.kg - min) / nBins)]
+                      ? this.colorsLight[Math.floor((element.kg - min) / nBins)]
+                      : deezNutz.colorsDark[
+                          Math.floor((element.kg - min) / nBins)
+                        ]
                   );
                 });
               }
@@ -243,9 +242,12 @@ export default {
           this.municipalityDataExport = JSON.parse(
             localStorage.municipalityDataExport
           );
-          let filtered = this.municipalityDataExport.filter(
+          let filteredd = this.municipalityDataExport.filter(
             (x) => parseFloat(x.kg) > 0 && x.obcina !== null
           );
+          let filtered = filteredd.map(function (obj) {
+            return { obcina: obj.obcina, kg: parseFloat(Math.log(obj.kg)) };
+          });
           if (filtered.length === 0) {
             deezNutz.heatMap = false;
             return;
@@ -260,19 +262,19 @@ export default {
           if (deezNutz.methodEqual) {
             // method of equal distribution across bins
             let i = 0;
-            let perBin = filtered.length / colors.length;
+            let perBin = filtered.length / deezNutz.colorsDark.length;
             filtered.forEach((element) => {
               d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                 "fill",
                 deezNutz.theme == "light"
-                  ? colors_light_reversed[Math.floor(i / perBin)]
-                  : colors_reversed[Math.floor(i / perBin)]
+                  ? this.colorsLight[Math.floor(i / perBin)]
+                  : deezNutz.colorsDark[Math.floor(i / perBin)]
               );
               i++;
             });
           } else {
             // method of non equal distribution
-            let n = colors.length;
+            let n = deezNutz.colorsDark.length;
             let max = parseFloat(filtered[0].kg);
             let min = parseFloat(filtered[filtered.length - 1].kg);
             let nBins = (max - min + 1) / n;
@@ -281,8 +283,8 @@ export default {
               d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                 "fill",
                 deezNutz.theme == "light"
-                  ? colors_light[Math.floor((element.kg - min) / nBins)]
-                  : colors[Math.floor((element.kg - min) / nBins)]
+                  ? this.colorsLight[Math.floor((element.kg - min) / nBins)]
+                  : deezNutz.colorsDark[Math.floor((element.kg - min) / nBins)]
               );
             });
           }
@@ -292,13 +294,14 @@ export default {
               deezNutz.heatMap = false;
               console.log("You are dumb, sorry.");
             } else {
-              console.log("filtering");
-
               deezNutz.municipalityDataExport = response;
 
-              let filtered = response.filter(
+              let filteredd = response.filter(
                 (x) => parseFloat(x.kg) > 0 && x.obcina !== null
               );
+              let filtered = filteredd.map(function (obj) {
+                return { obcina: obj.obcina, kg: parseFloat(Math.log(obj.kg)) };
+              });
               if (filtered.length === 0) {
                 deezNutz.heatMap = false;
                 return;
@@ -313,19 +316,19 @@ export default {
               if (deezNutz.methodEqual) {
                 // method of equal distribution across bins
                 let i = 0;
-                let perBin = filtered.length / colors.length;
+                let perBin = filtered.length / deezNutz.colorsDark.length;
                 filtered.forEach((element) => {
                   d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                     "fill",
                     deezNutz.theme == "light"
-                      ? colors_light_reversed[Math.floor(i / perBin)]
-                      : colors_reversed[Math.floor(i / perBin)]
+                      ? this.colorsLight[Math.floor(i / perBin)]
+                      : deezNutz.colorsDark[Math.floor(i / perBin)]
                   );
                   i++;
                 });
               } else {
                 // method of non equal distribution
-                let n = colors.length;
+                let n = deezNutz.colorsDark.length;
                 let max = parseFloat(filtered[0].kg);
                 let min = parseFloat(filtered[filtered.length - 1].kg);
                 let nBins = (max - min + 1) / n;
@@ -334,8 +337,10 @@ export default {
                   d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                     "fill",
                     deezNutz.theme == "light"
-                      ? colors_light[Math.floor((element.kg - min) / nBins)]
-                      : colors[Math.floor((element.kg - min) / nBins)]
+                      ? this.colorsLight[Math.floor((element.kg - min) / nBins)]
+                      : deezNutz.colorsDark[
+                          Math.floor((element.kg - min) / nBins)
+                        ]
                   );
                 });
               }
@@ -511,6 +516,9 @@ export default {
         .on("mouseover", function (ev, d) {
           let overlay = document.getElementById("overlay-box");
           overlay.querySelector("span").innerHTML = d.properties.OB_UIME;
+          overlay.getElementsByClassName("value")[0].innerHTML = "-";
+          overlay.getElementsByClassName("description")[0].innerHTML =
+            "Ni podatka";
 
           if (deezNutz.radioModel == "import") {
             if (deezNutz.municipalityDataImport !== undefined) {
@@ -626,10 +634,16 @@ html:not(.loaded) #cursor-container .dot {
 
 .filter-container {
   position: relative;
-  display: block;
+  display: inline-block;
   width: 100%;
 }
 .radio-group {
-  position: absolute;
+  position: static;
+  vertical-align: middle;
+  left: 0;
+}
+.label {
+  margin-right: 1em;
+  margin-left: 3em;
 }
 </style>
