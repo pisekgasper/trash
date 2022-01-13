@@ -1,6 +1,7 @@
 <template>
   <div class="form">
     <select class="waste_type" name="type" v-model="type">
+      <option value="0">Izberi tip...</option>
       <option v-for="t in all_types" :value="t" :key="t">{{ t }}</option>
     </select>
     <select class="year" name="year" v-model="year">
@@ -12,7 +13,12 @@
     </select>
   </div>
   <div class="graphs">
-    <column-chart :colors="[chartColor]" :data="monthly_data"></column-chart>
+    <column-chart
+      :loading="'Nalagam podatke...'"
+      v-if="type != '0'"
+      :colors="[chartColor]"
+      :data="monthly_data"
+    ></column-chart>
   </div>
 </template>
 
@@ -22,7 +28,7 @@ import http from "../http-common";
 export default {
   data: function () {
     return {
-      type: "",
+      type: "0",
       year: "2021",
       all_types: null,
       loading: true,
@@ -77,7 +83,7 @@ export default {
           for (const [_, value] of Object.entries(months_slo)) {
             if (this.monthly_data[value] == null) {
               this.monthly_data[value] = 0;
-              console.log(_)
+              console.log(_);
             }
           }
           console.log(this.monthly_data);
@@ -110,7 +116,9 @@ export default {
   },
   watch: {
     type: function () {
-      this.getYearlyProduce();
+      if (this.type != "0") {
+        this.getYearlyProduce();
+      }
     },
     year: function () {
       this.getYearlyProduce();
