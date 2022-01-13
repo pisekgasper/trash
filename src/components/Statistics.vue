@@ -29,8 +29,6 @@ export default {
       chartColor: "#3421FF",
       stackedColorsB: true,
       colorsDark: [
-        "#e4f1e1",
-        "#b4d9cc",
         "#89c0b6",
         "#63a6a0",
         "#448c8a",
@@ -38,8 +36,6 @@ export default {
         "#0d585f",
       ],
       colorsLight: [
-        "#f3e0f7",
-        "#e4c7f1",
         "#d1afe8",
         "#b998dd",
         "#9f82ce",
