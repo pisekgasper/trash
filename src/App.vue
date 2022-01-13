@@ -37,6 +37,12 @@
         >
           Mikroiskanje
         </li>
+        <li
+          v-bind:class="{ selectedtab: selectedTab == 3 }"
+          v-on:click="selectTab(3)"
+        >
+          Statistika
+        </li>
       </ul>
     </aside>
     <main class="main">
@@ -50,6 +56,9 @@
         <keep-alive
           ><personal-number v-if="selectedTab == 2"></personal-number
         ></keep-alive>
+        <keep-alive>
+          <statistics v-if="selectedTab == 3"></statistics>
+        </keep-alive>
       </div>
     </main>
   </div>
@@ -60,6 +69,7 @@ import SlovenianMap from "./components/SlovenianMap.vue";
 import CustomCursor from "./components/CustomCursor.vue";
 import TrashType from "./components/TrashType.vue";
 import PersonalNumber from "./components/PersonalNumber.vue";
+import Statistics from "./components/Statistics.vue";
 // import * as d3 from "d3";
 
 export default {
@@ -74,6 +84,7 @@ export default {
     CustomCursor,
     TrashType,
     PersonalNumber,
+    Statistics,
   },
   mounted() {
     document.documentElement.classList.add("show-cursor");
