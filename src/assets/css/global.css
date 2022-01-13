@@ -12,6 +12,8 @@
 html[data-theme="light"] {
     --accent: rgb(0, 94, 182);
 
+    --stacked-colors: true;
+
     --font-color: #0b0b15;
     --font-disabled: #777780;
 
@@ -41,6 +43,8 @@ html[data-theme="light"] {
 
 html[data-theme="dark"] {
     --accent: #18d089;
+
+    --stacked-colors: false;
 
     --font-color: white;
     --font-disabled: #c6c6d5;
