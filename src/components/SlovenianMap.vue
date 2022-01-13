@@ -1,5 +1,22 @@
 <template>
   <div class="filter-container">
+    <div class="radio-group">
+      <input
+        type="radio"
+        id="Import"
+        value="import"
+        v-model="radioModel"
+        @change="updateMap"
+      /><label for="Import">Uvoz</label
+      ><input
+        type="radio"
+        id="Export"
+        value="export"
+        v-model="radioModel"
+        @change="updateMap"
+      /><label for="Export">Izvoz</label>
+    </div>
+    <span class="label">Leto</span>
     <select name="year" v-model="year" @change="updateMap">
       <option value="2021">2021</option>
       <option value="2020">2020</option>
@@ -7,23 +24,6 @@
       <option value="2018">2018</option>
       <option value="2017">2017</option>
     </select>
-
-    <div class="radio-group">
-      <input
-        type="radio"
-        id="Import"
-        value="true"
-        v-model="radioModel"
-        @change="updateMap"
-      /><label for="Import">Uvoz</label
-      ><input
-        type="radio"
-        id="Export"
-        value="false"
-        v-model="radioModel"
-        @change="updateMap"
-      /><label for="Export">Izvoz</label>
-    </div>
   </div>
 
   <svg id="map-svg"></svg>
@@ -40,6 +40,7 @@ import query from "../helpers/query";
 export default {
   data() {
     return {
+      theme: "dark",
       svg: null,
       regions: null,
       g: null,
@@ -52,50 +53,92 @@ export default {
       regionClicked: null,
       heatMap: true,
       year: "2021",
-      radioModel: "true",
-      methodEqual: true,
-      municipalityData: null,
+      radioModel: "import",
+      methodEqual: false,
+      municipalityDataExport: null,
+      municipalityDataImport: null,
+      colorsDark: [
+        "#e4f1e1",
+        "#b4d9cc",
+        "#89c0b6",
+        "#63a6a0",
+        "#448c8a",
+        "#287274",
+        "#0d585f",
+      ],
+      colorsLight: [
+        "#f3e0f7",
+        "#e4c7f1",
+        "#d1afe8",
+        "#b998dd",
+        "#9f82ce",
+        "#826dba",
+        "#63589f",
+      ],
     };
   },
   mounted() {
     document.getElementsByTagName("html")[0].classList.add("loaded");
+    if (localStorage.municipalityDataExport) {
+      this.municipalityDataExport = JSON.parse(
+        localStorage.municipalityDataExport
+      );
+    }
+    if (localStorage.municipalityDataImport) {
+      this.municipalityDataImport = JSON.parse(
+        localStorage.municipalityDataImport
+      );
+    }
     this.$nextTick().then(() => {
+      document
+        .getElementById("switch")
+        .getElementsByTagName("input")[0]
+        .addEventListener("click", () => {
+          setTimeout(() => {
+            this.updateTheme();
+            this.borderFill = getComputedStyle(
+              document.documentElement
+            ).getPropertyValue("--accent");
+            this.resetColors();
+            this.generateHeatMap();
+          }, 100);
+        });
       this.draw();
       this.generateHeatMap();
     });
   },
+  watch: {
+    municipalityDataExport(newData) {
+      localStorage.municipalityDataExport = JSON.stringify(newData);
+    },
+    municipalityDataImport(newData) {
+      localStorage.municipalityDataImport = JSON.stringify(newData);
+    },
+  },
   methods: {
+    updateTheme() {
+      this.theme = document.documentElement.getAttribute("data-theme");
+    },
     generateHeatMap() {
       var sql =
-        this.radioModel == "true"
+        this.radioModel == "import"
           ? `SELECT e.obcina_prejem AS obcina, COALESCE(SUM(e.kol_kg), 0) AS kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NOT NULL GROUP BY e.obcina_prejem ORDER BY kg DESC;`
           : `SELECT e.obcina_oddaja AS obcina, COALESCE(SUM(e.kol_kg), 0) AS kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NOT NULL GROUP BY e.obcina_oddaja ORDER BY kg DESC;`;
 
       let deezNutz = this;
 
-      query(sql).then(function (response) {
-        let colors = [
-          "#e4f1e1",
-          "#b4d9cc",
-          "#89c0b6",
-          "#63a6a0",
-          "#448c8a",
-          "#287274",
-          "#0d585f",
-        ];
-        let colors_reversed = colors.reverse();
-
-        if (response === "Are you dumb?") {
-          deezNutz.heatMap = false;
-          console.log("You are dumb, sorry.");
-        } else {
-          console.log("filtering");
-
-          deezNutz.municipalityData = response;
-
-          let filtered = response.filter(
+      if (this.radioModel == "import") {
+        if (localStorage.municipalityDataImport) {
+          this.municipalityDataImport = JSON.parse(
+            localStorage.municipalityDataImport
+          );
+          let filteredd = this.municipalityDataImport.filter(
             (x) => parseFloat(x.kg) > 0 && x.obcina !== null
           );
+          let filtered = filteredd.map(function (obj) {
+            return { obcina: obj.obcina, kg: parseFloat(Math.log(obj.kg)) };
+          });
+
           if (filtered.length === 0) {
             deezNutz.heatMap = false;
             return;
@@ -110,17 +153,128 @@ export default {
           if (deezNutz.methodEqual) {
             // method of equal distribution across bins
             let i = 0;
-            let perBin = filtered.length / colors.length;
+            let perBin = filtered.length / deezNutz.colorsDark.length;
             filtered.forEach((element) => {
               d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                 "fill",
-                colors_reversed[Math.floor(i / perBin)]
+                deezNutz.theme == "light"
+                  ? deezNutz.colorsLight[Math.floor(i / perBin)]
+                  : deezNutz.colorsDark[Math.floor(i / perBin)]
               );
               i++;
             });
           } else {
             // method of non equal distribution
-            let n = colors.length;
+            let n = deezNutz.colorsDark.length;
+            let max = parseFloat(filtered[0].kg);
+            let min = parseFloat(filtered[filtered.length - 1].kg);
+            let nBins = (max - min + 1) / n;
+            filtered.forEach((element) => {
+              d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
+                "fill",
+                deezNutz.theme == "light"
+                  ? deezNutz.colorsLight[Math.floor((element.kg - min) / nBins)]
+                  : deezNutz.colorsDark[Math.floor((element.kg - min) / nBins)]
+              );
+            });
+          }
+        } else {
+          query(sql).then(function (response) {
+            if (response === "Are you dumb?") {
+              deezNutz.heatMap = false;
+              console.log("You are dumb, sorry.");
+            } else {
+              deezNutz.municipalityDataImport = response;
+
+              let filteredd = response.filter(
+                (x) => parseFloat(x.kg) > 0 && x.obcina !== null
+              );
+              let filtered = filteredd.map(function (obj) {
+                return { obcina: obj.obcina, kg: parseFloat(Math.log(obj.kg)) };
+              });
+              if (filtered.length === 0) {
+                deezNutz.heatMap = false;
+                return;
+              }
+
+              deezNutz.heatMap = true;
+
+              d3.select(`#map-svg .regions`)
+                .selectAll("path")
+                .attr("fill", "white");
+
+              if (deezNutz.methodEqual) {
+                // method of equal distribution across bins
+                let i = 0;
+                let perBin = filtered.length / deezNutz.colorsDark.length;
+                filtered.forEach((element) => {
+                  d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
+                    "fill",
+                    deezNutz.theme == "light"
+                      ? this.colorsLight[Math.floor(i / perBin)]
+                      : deezNutz.colorsDark[Math.floor(i / perBin)]
+                  );
+                  i++;
+                });
+              } else {
+                // method of non equal distribution
+                let n = deezNutz.colorsDark.length;
+                let max = parseFloat(filtered[0].kg);
+                let min = parseFloat(filtered[filtered.length - 1].kg);
+                let nBins = (max - min + 1) / n;
+
+                filtered.forEach((element) => {
+                  d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
+                    "fill",
+                    deezNutz.theme == "light"
+                      ? this.colorsLight[Math.floor((element.kg - min) / nBins)]
+                      : deezNutz.colorsDark[
+                          Math.floor((element.kg - min) / nBins)
+                        ]
+                  );
+                });
+              }
+            }
+          });
+        }
+      } else {
+        if (localStorage.municipalityDataExport) {
+          this.municipalityDataExport = JSON.parse(
+            localStorage.municipalityDataExport
+          );
+          let filteredd = this.municipalityDataExport.filter(
+            (x) => parseFloat(x.kg) > 0 && x.obcina !== null
+          );
+          let filtered = filteredd.map(function (obj) {
+            return { obcina: obj.obcina, kg: parseFloat(Math.log(obj.kg)) };
+          });
+          if (filtered.length === 0) {
+            deezNutz.heatMap = false;
+            return;
+          }
+
+          deezNutz.heatMap = true;
+
+          d3.select(`#map-svg .regions`)
+            .selectAll("path")
+            .attr("fill", "white");
+
+          if (deezNutz.methodEqual) {
+            // method of equal distribution across bins
+            let i = 0;
+            let perBin = filtered.length / deezNutz.colorsDark.length;
+            filtered.forEach((element) => {
+              d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
+                "fill",
+                deezNutz.theme == "light"
+                  ? this.colorsLight[Math.floor(i / perBin)]
+                  : deezNutz.colorsDark[Math.floor(i / perBin)]
+              );
+              i++;
+            });
+          } else {
+            // method of non equal distribution
+            let n = deezNutz.colorsDark.length;
             let max = parseFloat(filtered[0].kg);
             let min = parseFloat(filtered[filtered.length - 1].kg);
             let nBins = (max - min + 1) / n;
@@ -128,18 +282,79 @@ export default {
             filtered.forEach((element) => {
               d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                 "fill",
-                colors[Math.floor((element.kg - min) / nBins)]
+                deezNutz.theme == "light"
+                  ? this.colorsLight[Math.floor((element.kg - min) / nBins)]
+                  : deezNutz.colorsDark[Math.floor((element.kg - min) / nBins)]
               );
             });
           }
+        } else {
+          query(sql).then(function (response) {
+            if (response === "Are you dumb?") {
+              deezNutz.heatMap = false;
+              console.log("You are dumb, sorry.");
+            } else {
+              deezNutz.municipalityDataExport = response;
+
+              let filteredd = response.filter(
+                (x) => parseFloat(x.kg) > 0 && x.obcina !== null
+              );
+              let filtered = filteredd.map(function (obj) {
+                return { obcina: obj.obcina, kg: parseFloat(Math.log(obj.kg)) };
+              });
+              if (filtered.length === 0) {
+                deezNutz.heatMap = false;
+                return;
+              }
+
+              deezNutz.heatMap = true;
+
+              d3.select(`#map-svg .regions`)
+                .selectAll("path")
+                .attr("fill", "white");
+
+              if (deezNutz.methodEqual) {
+                // method of equal distribution across bins
+                let i = 0;
+                let perBin = filtered.length / deezNutz.colorsDark.length;
+                filtered.forEach((element) => {
+                  d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
+                    "fill",
+                    deezNutz.theme == "light"
+                      ? this.colorsLight[Math.floor(i / perBin)]
+                      : deezNutz.colorsDark[Math.floor(i / perBin)]
+                  );
+                  i++;
+                });
+              } else {
+                // method of non equal distribution
+                let n = deezNutz.colorsDark.length;
+                let max = parseFloat(filtered[0].kg);
+                let min = parseFloat(filtered[filtered.length - 1].kg);
+                let nBins = (max - min + 1) / n;
+
+                filtered.forEach((element) => {
+                  d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
+                    "fill",
+                    deezNutz.theme == "light"
+                      ? this.colorsLight[Math.floor((element.kg - min) / nBins)]
+                      : deezNutz.colorsDark[
+                          Math.floor((element.kg - min) / nBins)
+                        ]
+                  );
+                });
+              }
+            }
+          });
         }
-      });
+      }
     },
     updateMap() {
       this.resetColors();
       this.generateHeatMap();
     },
     resetColors() {
+      this.svg.select(".regional-borders").attr("stroke", this.borderFill);
       this.svg.select(".regions").selectAll("path").attr("fill", "transparent");
     },
     reset() {
@@ -301,25 +516,40 @@ export default {
         .on("mouseover", function (ev, d) {
           let overlay = document.getElementById("overlay-box");
           overlay.querySelector("span").innerHTML = d.properties.OB_UIME;
+          overlay.getElementsByClassName("value")[0].innerHTML = "-";
+          overlay.getElementsByClassName("description")[0].innerHTML =
+            "Ni podatka";
 
-          if (deezNutz.municipalityData !== undefined) {
-            const obj = deezNutz.municipalityData.find(
-              (o) => o.obcina == d.properties.OB_MID
-            );
-            if (obj !== undefined) {
-              let val = overlay.getElementsByClassName("value")[0];
-              let description =
-                overlay.getElementsByClassName("description")[0];
+          if (deezNutz.radioModel == "import") {
+            if (deezNutz.municipalityDataImport !== undefined) {
+              const obj = deezNutz.municipalityDataImport.find(
+                (o) => o.obcina == d.properties.OB_MID
+              );
+              if (obj !== undefined) {
+                let val = overlay.getElementsByClassName("value")[0];
+                let description =
+                  overlay.getElementsByClassName("description")[0];
 
-              let weight = deezNutz.parseWeight(obj.kg);
-              val.innerHTML = `${weight.w} ${weight.unit}`;
-              description.innerHTML =
-                deezNutz.radioModel == "true"
-                  ? `Količina uvoženih odpadkov`
-                  : `Količina izvoženih odpadkov`;
+                let weight = deezNutz.parseWeight(obj.kg);
+                val.innerHTML = `${weight.w} ${weight.unit}`;
+                description.innerHTML = `Količina uvoženih odpadkov`;
+              }
             }
           } else {
-            console.log("undefinedddd");
+            if (deezNutz.municipalityDataExport !== undefined) {
+              const obj = deezNutz.municipalityDataExport.find(
+                (o) => o.obcina == d.properties.OB_MID
+              );
+              if (obj !== undefined) {
+                let val = overlay.getElementsByClassName("value")[0];
+                let description =
+                  overlay.getElementsByClassName("description")[0];
+
+                let weight = deezNutz.parseWeight(obj.kg);
+                val.innerHTML = `${weight.w} ${weight.unit}`;
+                description.innerHTML = `Količina izvoženih odpadkov`;
+              }
+            }
           }
 
           if (!deezNutz.heatMap)
@@ -404,10 +634,16 @@ html:not(.loaded) #cursor-container .dot {
 
 .filter-container {
   position: relative;
-  display: block;
+  display: inline-block;
   width: 100%;
 }
 .radio-group {
-  position: absolute;
+  position: static;
+  vertical-align: middle;
+  left: 0;
+}
+.label {
+  margin-right: 1em;
+  margin-left: 3em;
 }
 </style>

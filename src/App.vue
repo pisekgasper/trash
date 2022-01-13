@@ -60,7 +60,7 @@ import SlovenianMap from "./components/SlovenianMap.vue";
 import CustomCursor from "./components/CustomCursor.vue";
 import TrashType from "./components/TrashType.vue";
 import PersonalNumber from "./components/PersonalNumber.vue";
-import * as d3 from "d3";
+// import * as d3 from "d3";
 
 export default {
   data() {
@@ -88,12 +88,13 @@ export default {
       if (this.darkTheme) html.setAttribute("data-theme", "dark");
       else html.setAttribute("data-theme", "light");
 
-      const accentColor = getComputedStyle(
-        document.documentElement
-      ).getPropertyValue("--accent");
-      const svg = d3.select("#map-svg");
-      svg.select(".regions").selectAll("path").attr("fill", "transparent");
-      svg.select(".regional-borders").attr("stroke", accentColor);
+      // const accentColor = getComputedStyle(
+      //   document.documentElement
+      // ).getPropertyValue("--accent");
+      // const svg = d3.select("#map-svg");
+
+      // svg.select(".regions").selectAll("path").attr("fill", "transparent");
+      // svg.select(".regional-borders").attr("stroke", accentColor);
     },
   },
 };
@@ -197,17 +198,21 @@ export default {
   margin-top: 5vh;
   width: 100%;
   height: min-content;
+  text-align: right;
 }
 #Menu li {
-  text-align: right;
+  float: right;
   border-radius: 7vh 0 0 7vh;
   height: 4em;
   line-height: 4em;
-  padding-right: 1em;
-  margin: 10% 0 10% 25%;
+  padding-right: 2em;
+  padding-left: 2em;
+  margin: 1rem 0;
+  width: min-content;
+  white-space: nowrap;
   font-size: 1.3em;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.2em;
   cursor: pointer;
   font-weight: 400;
 }
