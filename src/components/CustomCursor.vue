@@ -120,7 +120,7 @@ export default {
     top: 50%;
     left: 50%;
     border-radius: 50%;
-    border: 2px solid black;
+    border: 0.2rem solid var(--cursor);
     transform: translate(-50%, -50%);
 
     transition: opacity 1s easeOut;
@@ -134,7 +134,7 @@ export default {
     top: 50%;
     left: 50%;
     border-radius: 50%;
-    background-color: #0d0d19;
+    background-color: var(--cursor);
     transform: translate(-50%, -50%);
 
     transition: opacity 1s easeOut;

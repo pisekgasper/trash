@@ -117,9 +117,15 @@ ORDER BY st_evl DESC;
     GROUP BY e.obcina_prejem;
 
 -- status sender in receiver po obcinah
-SELECT sender_status, count(*) as num, obcina_oddaja FROM evl GROUP BY sender_status, obcina_oddaja;
+SELECT obcina_oddaja AS obcina, sender_status AS sender, SUM(kol_kg) as kg 
+FROM evl  e
+WHERE DATE_PART('year', e.dat_oddaje) = '2021' AND e.dat_prejem_zav IS NULL 
+GROUP BY sender, obcina;
 
-SELECT receiver_status, count(*) as num, obcina_oddaja FROM evl GROUP BY receiver_status, obcina_oddaja;
+SELECT obcina_prejem AS obcina, receiver_status AS receiver, SUM(kol_kg) as kg 
+FROM evl e
+WHERE DATE_PART('year', e.dat_oddaje) = '2021' AND e.dat_prejem_zav IS NULL 
+GROUP BY receiver, obcina;
 
 -- kolicina po letih po mesecih
 SELECT DATE_PART('year', dat_oddaje) as year, DATE_PART('month', dat_oddaje) as month, sum(kol_kg) from evl GROUP BY year, month;

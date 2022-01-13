@@ -9,8 +9,12 @@
     src: url("../fonts/OktaNeueLight.ttf");
 }
 
+:root {
+    --cursor: rgba(25, 25, 25, .85)
+}
+
 html[data-theme="light"] {
-    --accent: rgb(0, 94, 182);
+    --accent: #6411ad;
 
     --font-color: #0b0b15;
     --font-disabled: #777780;
@@ -34,6 +38,7 @@ html[data-theme="light"] {
     --overlay-box-content: #fbf7ff;
 
     --bg-02-not-transparent: #E9E8EF;
+    --bg-03-not-transparent: #E5E1E8;
     --blur-color: rgba(40, 40, 40, 0.5);
 
     --error: #bd2d2d;
@@ -64,6 +69,7 @@ html[data-theme="dark"] {
     --overlay-box-content: #fbf7ff;
 
     --bg-02-not-transparent: #1C1C27;
+    --bg-03-not-transparent: #22222C;
     --blur-color: rgba(40, 40, 40, 0.5);
 
     --error: #bd2d2d;
@@ -151,7 +157,7 @@ select::-ms-expand {
 }
 
 .radio-group input[type=radio]:checked + label{
-    color: black;
+    color: var(--bg-00);
     background: var(--accent);
 }
 .radio-group label + input[type=radio] + label {

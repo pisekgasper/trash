@@ -27,6 +27,11 @@
   </div>
 
   <svg id="map-svg"></svg>
+  <div id="Overlay" v-if="showGraph" @click="hideGraph"></div>
+  <div id="GraphBox" v-if="showGraph">
+    <pie-chart :data="doughnutDataSender" :donut="true"></pie-chart>
+    <pie-chart :data="doughnutDataReceiver" :donut="true"></pie-chart>
+  </div>
 </template>
 
 <script>
@@ -75,6 +80,11 @@ export default {
         "#826dba",
         "#63589f",
       ],
+      showGraph: false,
+      doughnutDataSender: null,
+      doughnutDataReceiver: null,
+      senderData: null,
+      receiverData: null,
     };
   },
   mounted() {
@@ -89,6 +99,12 @@ export default {
         localStorage.municipalityDataImport
       );
     }
+    if (localStorage.senderData) {
+      this.senderData = JSON.parse(localStorage.senderData);
+    }
+    if (localStorage.receiverData) {
+      this.receiverData = JSON.parse(localStorage.receiverData);
+    }
     this.$nextTick().then(() => {
       document
         .getElementById("switch")
@@ -99,6 +115,7 @@ export default {
             this.borderFill = getComputedStyle(
               document.documentElement
             ).getPropertyValue("--accent");
+            this.reset();
             this.resetColors();
             this.generateHeatMap();
           }, 100);
@@ -114,13 +131,19 @@ export default {
     municipalityDataImport(newData) {
       localStorage.municipalityDataImport = JSON.stringify(newData);
     },
+    receiverData(newData) {
+      localStorage.receiverData = JSON.stringify(newData);
+    },
+    senderData(newData) {
+      localStorage.senderData = JSON.stringify(newData);
+    },
   },
   methods: {
     updateTheme() {
       this.theme = document.documentElement.getAttribute("data-theme");
     },
     generateHeatMap() {
-      var sql =
+      let sql =
         this.radioModel == "import"
           ? `SELECT e.obcina_prejem AS obcina, COALESCE(SUM(e.kol_kg), 0) AS kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NOT NULL GROUP BY e.obcina_prejem ORDER BY kg DESC;`
           : `SELECT e.obcina_oddaja AS obcina, COALESCE(SUM(e.kol_kg), 0) AS kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NOT NULL GROUP BY e.obcina_oddaja ORDER BY kg DESC;`;
@@ -350,6 +373,7 @@ export default {
       }
     },
     updateMap() {
+      this.reset();
       this.resetColors();
       this.generateHeatMap();
     },
@@ -358,6 +382,7 @@ export default {
       this.svg.select(".regions").selectAll("path").attr("fill", "transparent");
     },
     reset() {
+      console.log("resetting");
       this.regions.transition().style("fill", null);
       this.svg
         .transition()
@@ -399,7 +424,7 @@ export default {
         element.transition().style("fill", this.borderFill);
         this.svg
           .transition()
-          .duration(750)
+          .duration(1000)
           .call(
             this.zoom.transform,
             d3.zoomIdentity
@@ -413,8 +438,72 @@ export default {
               )
               .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
             d3.pointer(ev, this.svg.node())
-          );
+          )
+          .on("end", this.drawGraph);
       }
+    },
+    drawGraph() {
+      let deezNutz = this;
+      if (localStorage.senderData) {
+        this.senderData = JSON.parse(localStorage.senderData);
+        let found = this.senderData.filter(
+          (x) => parseFloat(x.kg) > 0 && x.obcina == deezNutz.regionClicked
+        );
+        let helper = [];
+        found.forEach((el) => {
+          helper.push([el.sender, parseFloat(el.kg)]);
+        });
+        deezNutz.doughnutDataSender = helper;
+      } else {
+        let sql = `SELECT obcina_oddaja AS obcina, sender_status AS sender, SUM(kol_kg) as kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NULL GROUP BY sender, obcina;`;
+        query(sql).then(function (response) {
+          if (response === "Are you dumb?") console.log("You are dumb, sorry.");
+          else {
+            deezNutz.senderData = response;
+            let found = response.filter(
+              (x) => x.obcina == deezNutz.regionClicked
+            );
+            let helper = [];
+            found.forEach((el) => {
+              helper.push([el.sender, parseFloat(el.kg)]);
+            });
+            deezNutz.doughnutDataSender = helper;
+          }
+        });
+      }
+
+      if (localStorage.receiverData) {
+        this.senderData = JSON.parse(localStorage.receiverData);
+        let found = this.receiverData.filter(
+          (x) => parseFloat(x.kg) > 0 && x.obcina == deezNutz.regionClicked
+        );
+        let helper = [];
+        found.forEach((el) => {
+          helper.push([el.receiver, parseFloat(el.kg)]);
+        });
+        deezNutz.doughnutDataReceiver = helper;
+      } else {
+        let sql = `SELECT obcina_prejem AS obcina, receiver_status AS receiver, SUM(kol_kg) as kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NULL GROUP BY receiver, obcina;`;
+        query(sql).then(function (response) {
+          if (response === "Are you dumb?") console.log("You are dumb, sorry.");
+          else {
+            deezNutz.receiverData = response;
+            let found = response.filter(
+              (x) => x.obcina == deezNutz.regionClicked
+            );
+            let helper = [];
+            found.forEach((el) => {
+              helper.push([el.receiver, parseFloat(el.kg)]);
+            });
+            deezNutz.doughnutDataReceiver = helper;
+          }
+        });
+      }
+      this.showGraph = true;
+    },
+    hideGraph() {
+      this.showGraph = false;
+      this.reset();
     },
     handleZoom(e) {
       d3.select("#map-svg .regional-borders").attr("transform", e.transform);
@@ -645,5 +734,28 @@ html:not(.loaded) #cursor-container .dot {
 .label {
   margin-right: 1em;
   margin-left: 3em;
+}
+#GraphBox {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: 85%;
+  height: 75%;
+  transform: translate(-50%, -50%);
+  border-radius: 4vh;
+  background-color: var(--bg-03-not-transparent);
+}
+#Overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 4vh;
+  // background-color: var(--blur-color);
+  -webkit-backdrop-filter: blur(55px);
+  backdrop-filter: blur(5px);
 }
 </style>

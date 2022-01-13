@@ -137,7 +137,7 @@ export default {
   max-height: 100vh;
   display: grid;
   grid-template-areas: "sidebar main";
-  grid-template-columns: minmax(200px, 25%) 1fr;
+  grid-template-columns: minmax(26rem, 25%) 1fr;
   grid-template-rows: 1fr;
 }
 
@@ -209,10 +209,10 @@ export default {
   margin-top: 5vh;
   width: 100%;
   height: min-content;
-  text-align: right;
 }
 #Menu li {
   float: right;
+  clear: right;
   border-radius: 7vh 0 0 7vh;
   height: 4em;
   line-height: 4em;
