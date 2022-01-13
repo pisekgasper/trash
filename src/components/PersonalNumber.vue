@@ -1,6 +1,8 @@
 <template>
   <div class="form" v-if="!loading && !list">
+    <span>Pošiljatelj</span>
     <vue3-simple-typeahead
+      class="first"
       id="find_sender"
       placeholder="Išči pošiljatelja..."
       :items="senders"
@@ -17,6 +19,7 @@
       "
     >
     </vue3-simple-typeahead>
+    <span>Prejemnik</span>
     <vue3-simple-typeahead
       id="find_receiver"
       placeholder="Išči prejemnika..."
@@ -34,42 +37,60 @@
       "
     >
     </vue3-simple-typeahead>
-    <select name="month" v-model="month">
-      <option value="0">Mesec...</option>
-      <option value="1">Januar</option>
-      <option value="2">Februar</option>
-      <option value="3">Marec</option>
-      <option value="4">April</option>
-      <option value="5">Maj</option>
-      <option value="6">Junij</option>
-      <option value="7">Julij</option>
-      <option value="8">Avgust</option>
-      <option value="9">September</option>
-      <option value="10">Oktober</option>
-      <option value="11">November</option>
-      <option value="12">December</option>
-    </select>
-    <select name="year" v-model="year">
-      <option value="2021">2021</option>
-      <option value="2020">2020</option>
-      <option value="2019">2019</option>
-      <option value="2018">2018</option>
-      <option value="2017">2017</option>
-    </select>
-    <select name="danger" v-model="dngr">
-      <option value="0">Nevarnost odpadka...</option>
-      <option value="true">DA</option>
-      <option value="false">NE</option>
-    </select>
-    <input
-      type="button"
-      value="POIŠČI"
-      @click="getSendersEvl"
-      v-if="selected_sender != null"
-    />
+    <div class="selector-container">
+      <select name="month" v-model="month">
+        <option value="0">Mesec...</option>
+        <option value="1">Januar</option>
+        <option value="2">Februar</option>
+        <option value="3">Marec</option>
+        <option value="4">April</option>
+        <option value="5">Maj</option>
+        <option value="6">Junij</option>
+        <option value="7">Julij</option>
+        <option value="8">Avgust</option>
+        <option value="9">September</option>
+        <option value="10">Oktober</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+      <select name="year" v-model="year">
+        <option value="2021">2021</option>
+        <option value="2020">2020</option>
+        <option value="2019">2019</option>
+        <option value="2018">2018</option>
+        <option value="2017">2017</option>
+      </select>
+      <select name="danger" v-model="dngr">
+        <option value="0">Nevarnost odpadka...</option>
+        <option value="true">DA</option>
+        <option value="false">NE</option>
+      </select>
+    </div>
+    <div class="button-container">
+      <input
+        id="FindButton"
+        type="button"
+        value="POIŠČI"
+        @click="getSendersEvl"
+        v-if="selected_sender != null"
+      />
+    </div>
   </div>
   <div class="evl_list" v-if="loading || list">
-    <div class="close-list" v-if="list" @click="() => {list = false; loading = false; selected_sender = null; selected_receiver = null;}">&times;</div>
+    <div
+      class="close-list"
+      v-if="list"
+      @click="
+        () => {
+          list = false;
+          loading = false;
+          selected_sender = null;
+          selected_receiver = null;
+        }
+      "
+    >
+      &times;
+    </div>
     <p v-if="loading">Loading</p>
     <div class="offset">
       <div class="evls" v-if="list">
@@ -251,10 +272,14 @@ export default {
         query = query.concat(`AND receiver_id = ${this.selected_receiver}`);
       }
       if (this.year != null) {
-        query = query.concat(`AND DATE_PART('year', dat_oddaje) = '${this.year}'`);
+        query = query.concat(
+          `AND DATE_PART('year', dat_oddaje) = '${this.year}'`
+        );
       }
       if (this.month != "0") {
-        query = query.concat(`AND DATE_PART('month', dat_oddaje) = '${this.month}'`);
+        query = query.concat(
+          `AND DATE_PART('month', dat_oddaje) = '${this.month}'`
+        );
       }
       if (this.dngr != "0") {
         //var isTrueSet = (myValue === 'true');
@@ -284,7 +309,7 @@ export default {
           console.log(e);
           this.loading = false;
         });
-        this.selected_receiver = null;
+      this.selected_receiver = null;
     },
     setPages() {
       this.pages = [];
@@ -319,6 +344,55 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.button-container {
+  display: block;
+  width: 100%;
+  position: relative;
+  margin-top: 3rem;
+}
+#FindButton {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  background-color: var(--accent);
+  color: var(--bg-00);
+  cursor: pointer;
+  margin: auto;
+}
+#FindButton:hover {
+  background-color: var(--bg-02);
+  color: var(--content);
+  transition: all 0.3s ease-out;
+}
+.form {
+  padding: 4vh 0;
+  width: 75%;
+  text-align: center;
+  margin: auto;
+  text-align: left;
+}
+.form span {
+  display: block;
+  padding-left: 2rem;
+  padding-bottom: 0.4rem;
+}
+.form span:not(:first-child) {
+  margin-top: 3rem;
+}
+// .form .simple-typeahead:not(.first) {
+//   margin-top: 3rem;
+// }
+
+.selector-container {
+  margin-top: 3rem;
+  display: inline-flex;
+  width: 100%;
+  gap: 2rem;
+}
+.selector-container select {
+  flex: 1;
+}
 
 .page-item {
   display: flex;
