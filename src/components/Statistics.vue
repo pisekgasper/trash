@@ -1,7 +1,7 @@
 <template>
   <div class="four_charts">
     <div class="chart1">
-      <line-chart :data="weight_Y"></line-chart>
+      <column-chart ytitle="Teža v Mt" :stacked="true" :data="weight_Y"></column-chart>
     </div>
     <div class="chart2"></div>
     <div class="chart3"></div>
@@ -20,17 +20,52 @@ export default {
   },
   methods: {
     getChart1() {
+        var months_slo = {
+            1: "Januar",
+            2: "Februar",
+            3: "Marec",
+            4: "April",
+            5: "Maj",
+            6: "Junij",
+            7: "Julij",
+            8: "Avgust",
+            9: "September",
+            10: "Oktober",
+            11: "November",
+            12: "December",
+          };
+
       var query = "SELECT DATE_PART('year', dat_oddaje) as year, DATE_PART('month', dat_oddaje) as month, sum(kol_kg) as weight from evl GROUP BY year, month;";
       console.log(query);
       http
         .get("/trash", { params: { q: query } })
         .then((response) => {
-          this.weight_Y = {};
+          var helper = {};
           response.data.forEach((e) => {
-            this.weight_Y[e.year] = [];
+            helper[e.year] = [];
           });
           response.data.forEach((e) => {
-            this.weight_Y[e.year].push({month: e.month, weight: e.weight});
+            helper[e.year].push({month: e.month, weight: e.weight});
+          });
+          console.log(helper['2017'][0]);
+          this.weight_Y = [];
+          ["2017", "2018", "2019", "2020", "2021"].forEach(key => {
+              console.log(key);
+              var builder = {}
+              for (let i = 0; i < 12; i++) {
+                  if (helper[key][i]) {
+                    builder[months_slo[i+1]] = helper[key][i].weight / 1000000;
+                  } else {
+                      builder[months_slo[i+1]] = 0;
+                  }
+                  
+                  
+              }
+              console.log(builder)
+              this.weight_Y.push({
+                  name: key, 
+                  data: builder,
+              })
           });
           console.log(this.weight_Y);
           localStorage.weightForYears = JSON.stringify(this.weight_Y);
