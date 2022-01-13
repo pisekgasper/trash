@@ -17,7 +17,7 @@
       /><label for="Export">Izvoz</label>
     </div>
     <span class="label">Leto</span>
-    <select name="year" v-model="year" @change="updateMap">
+    <select name="year" v-model="year" @change="updateMapYear">
       <option value="2021">2021</option>
       <option value="2020">2020</option>
       <option value="2019">2019</option>
@@ -29,8 +29,16 @@
   <svg id="map-svg"></svg>
   <div id="Overlay" v-if="showGraph" @click="hideGraph"></div>
   <div id="GraphBox" v-if="showGraph">
-    <pie-chart :data="doughnutDataSender" :donut="true"></pie-chart>
-    <pie-chart :data="doughnutDataReceiver" :donut="true"></pie-chart>
+    <p class="heading">
+      Količina {{ radioModel == "import" ? "uvoza" : "izvoza" }} po mesecih -
+      {{ regionClickedName }}
+    </p>
+    <column-chart
+      ytitle="Teža v Mt"
+      :sufix="'milijon ton'"
+      :colors="[borderFill]"
+      :data="radioModel == 'import' ? chartDataReceiver : chartDataSender"
+    ></column-chart>
   </div>
 </template>
 
@@ -56,6 +64,7 @@ export default {
       mainFill: null,
       borderFill: null,
       regionClicked: null,
+      regionClickedName: null,
       heatMap: true,
       year: "2021",
       radioModel: "import",
@@ -81,10 +90,11 @@ export default {
         "#63589f",
       ],
       showGraph: false,
-      doughnutDataSender: null,
-      doughnutDataReceiver: null,
+      chartDataSender: null,
+      chartDataReceiver: null,
       senderData: null,
       receiverData: null,
+      finishedLoading: false,
     };
   },
   mounted() {
@@ -143,6 +153,7 @@ export default {
       this.theme = document.documentElement.getAttribute("data-theme");
     },
     generateHeatMap() {
+      this.finishedLoading = false;
       let sql =
         this.radioModel == "import"
           ? `SELECT e.obcina_prejem AS obcina, COALESCE(SUM(e.kol_kg), 0) AS kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NOT NULL GROUP BY e.obcina_prejem ORDER BY kg DESC;`
@@ -201,6 +212,7 @@ export default {
               );
             });
           }
+          this.finishedLoading = true;
         } else {
           query(sql).then(function (response) {
             if (response === "Are you dumb?") {
@@ -234,7 +246,7 @@ export default {
                   d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                     "fill",
                     deezNutz.theme == "light"
-                      ? this.colorsLight[Math.floor(i / perBin)]
+                      ? deezNutz.colorsLight[Math.floor(i / perBin)]
                       : deezNutz.colorsDark[Math.floor(i / perBin)]
                   );
                   i++;
@@ -250,7 +262,9 @@ export default {
                   d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                     "fill",
                     deezNutz.theme == "light"
-                      ? this.colorsLight[Math.floor((element.kg - min) / nBins)]
+                      ? deezNutz.colorsLight[
+                          Math.floor((element.kg - min) / nBins)
+                        ]
                       : deezNutz.colorsDark[
                           Math.floor((element.kg - min) / nBins)
                         ]
@@ -258,6 +272,7 @@ export default {
                 });
               }
             }
+            deezNutz.finishedLoading = true;
           });
         }
       } else {
@@ -290,7 +305,7 @@ export default {
               d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                 "fill",
                 deezNutz.theme == "light"
-                  ? this.colorsLight[Math.floor(i / perBin)]
+                  ? deezNutz.colorsLight[Math.floor(i / perBin)]
                   : deezNutz.colorsDark[Math.floor(i / perBin)]
               );
               i++;
@@ -306,11 +321,12 @@ export default {
               d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                 "fill",
                 deezNutz.theme == "light"
-                  ? this.colorsLight[Math.floor((element.kg - min) / nBins)]
+                  ? deezNutz.colorsLight[Math.floor((element.kg - min) / nBins)]
                   : deezNutz.colorsDark[Math.floor((element.kg - min) / nBins)]
               );
             });
           }
+          this.finishedLoading = true;
         } else {
           query(sql).then(function (response) {
             if (response === "Are you dumb?") {
@@ -344,7 +360,7 @@ export default {
                   d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                     "fill",
                     deezNutz.theme == "light"
-                      ? this.colorsLight[Math.floor(i / perBin)]
+                      ? deezNutz.colorsLight[Math.floor(i / perBin)]
                       : deezNutz.colorsDark[Math.floor(i / perBin)]
                   );
                   i++;
@@ -360,7 +376,9 @@ export default {
                   d3.select(`#map-svg .regions #ob${element.obcina}`).attr(
                     "fill",
                     deezNutz.theme == "light"
-                      ? this.colorsLight[Math.floor((element.kg - min) / nBins)]
+                      ? deezNutz.colorsLight[
+                          Math.floor((element.kg - min) / nBins)
+                        ]
                       : deezNutz.colorsDark[
                           Math.floor((element.kg - min) / nBins)
                         ]
@@ -368,9 +386,23 @@ export default {
                 });
               }
             }
+            deezNutz.finishedLoading = true;
           });
         }
       }
+    },
+    updateMapYear() {
+      localStorage.removeItem("municipalityDataExport");
+      localStorage.removeItem("municipalityDataImport");
+      localStorage.removeItem("receiverData");
+      localStorage.removeItem("senderData");
+
+      this.chartDataSender = null;
+      this.chartDataReceiver = null;
+
+      this.reset();
+      this.resetColors();
+      this.generateHeatMap();
     },
     updateMap() {
       this.reset();
@@ -405,8 +437,10 @@ export default {
       if (this.regionClicked === d.properties.OB_MID) {
         this.reset();
         this.regionClicked = null;
+        this.regionClickedName = null;
       } else {
         this.regionClicked = d.properties.OB_MID;
+        this.regionClickedName = d.properties.OB_UIME;
         const element = d3.select("#map-svg g #ob" + d.properties.OB_MID);
         const bounds = element.node().getBBox();
         let x0 = bounds.x;
@@ -444,61 +478,111 @@ export default {
     },
     drawGraph() {
       let deezNutz = this;
-      if (localStorage.senderData) {
-        this.senderData = JSON.parse(localStorage.senderData);
-        let found = this.senderData.filter(
-          (x) => parseFloat(x.kg) > 0 && x.obcina == deezNutz.regionClicked
-        );
-        let helper = [];
-        found.forEach((el) => {
-          helper.push([el.sender, parseFloat(el.kg)]);
-        });
-        deezNutz.doughnutDataSender = helper;
-      } else {
-        let sql = `SELECT obcina_oddaja AS obcina, sender_status AS sender, SUM(kol_kg) as kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NULL GROUP BY sender, obcina;`;
-        query(sql).then(function (response) {
-          if (response === "Are you dumb?") console.log("You are dumb, sorry.");
-          else {
-            deezNutz.senderData = response;
-            let found = response.filter(
-              (x) => x.obcina == deezNutz.regionClicked
-            );
-            let helper = [];
-            found.forEach((el) => {
-              helper.push([el.sender, parseFloat(el.kg)]);
-            });
-            deezNutz.doughnutDataSender = helper;
+
+      let monthly_data = {};
+      var months_slo = {
+        1: "Jan",
+        2: "Feb",
+        3: "Mar",
+        4: "Apr",
+        5: "Maj",
+        6: "Jun",
+        7: "Jul",
+        8: "Avg",
+        9: "Sep",
+        10: "Okt",
+        11: "Nov",
+        12: "Dec",
+      };
+
+      if (this.radioModel == "import") {
+        if (localStorage.receiverData) {
+          this.receiverData = JSON.parse(localStorage.receiverData);
+          let found = this.receiverData.filter(
+            (x) => x.obcina == deezNutz.regionClicked
+          );
+
+          found.forEach((el) => {
+            monthly_data[months_slo[parseInt(el.mesec)]] = parseInt(el.sum);
+          });
+          console.log(monthly_data);
+          for (const [_, value] of Object.entries(months_slo)) {
+            if (monthly_data[value] == null) {
+              monthly_data[value] = 0;
+              console.log(_);
+            }
           }
-        });
+          deezNutz.chartDataReceiver = monthly_data;
+        } else {
+          let sql = `SELECT obcina_prejem obcina, DATE_PART('month', dat_oddaje) AS mesec, sum(kol_kg) FROM evl WHERE DATE_PART('year', dat_oddaje) = '${this.year}' AND dat_prejem_zav IS NOT NULL GROUP BY obcina, mesec ORDER BY obcina, mesec;`;
+          query(sql).then(function (response) {
+            if (response === "Are you dumb?")
+              console.log("You are dumb, sorry.");
+            else {
+              deezNutz.receiverData = response;
+              let found = response.filter(
+                (x) => x.obcina == deezNutz.regionClicked
+              );
+
+              found.forEach((el) => {
+                monthly_data[months_slo[parseInt(el.mesec)]] = parseInt(el.sum);
+              });
+              console.log(monthly_data);
+              for (const [_, value] of Object.entries(months_slo)) {
+                if (monthly_data[value] == null) {
+                  monthly_data[value] = 0;
+                  console.log(_);
+                }
+              }
+              deezNutz.chartDataReceiver = monthly_data;
+            }
+          });
+        }
+      } else {
+        if (localStorage.senderData) {
+          this.senderData = JSON.parse(localStorage.senderData);
+          let found = this.senderData.filter(
+            (x) => x.obcina == deezNutz.regionClicked
+          );
+
+          found.forEach((el) => {
+            monthly_data[months_slo[parseInt(el.mesec)]] = parseInt(el.sum);
+          });
+          console.log(monthly_data);
+          for (const [_, value] of Object.entries(months_slo)) {
+            if (monthly_data[value] == null) {
+              monthly_data[value] = 0;
+              console.log(_);
+            }
+          }
+          deezNutz.chartDataSender = monthly_data;
+        } else {
+          let sql = `SELECT obcina_oddaja obcina, DATE_PART('month', dat_oddaje) AS mesec, sum(kol_kg) FROM evl WHERE DATE_PART('year', dat_oddaje) = '${this.year}' AND dat_prejem_zav IS NOT NULL GROUP BY obcina, mesec ORDER BY obcina, mesec;`;
+          query(sql).then(function (response) {
+            if (response === "Are you dumb?")
+              console.log("You are dumb, sorry.");
+            else {
+              deezNutz.senderData = response;
+              let found = response.filter(
+                (x) => x.obcina == deezNutz.regionClicked
+              );
+
+              found.forEach((el) => {
+                monthly_data[months_slo[parseInt(el.mesec)]] = parseInt(el.sum);
+              });
+              console.log(monthly_data);
+              for (const [_, value] of Object.entries(months_slo)) {
+                if (monthly_data[value] == null) {
+                  monthly_data[value] = 0;
+                  console.log(_);
+                }
+              }
+              deezNutz.chartDataSender = monthly_data;
+            }
+          });
+        }
       }
 
-      if (localStorage.receiverData) {
-        this.senderData = JSON.parse(localStorage.receiverData);
-        let found = this.receiverData.filter(
-          (x) => parseFloat(x.kg) > 0 && x.obcina == deezNutz.regionClicked
-        );
-        let helper = [];
-        found.forEach((el) => {
-          helper.push([el.receiver, parseFloat(el.kg)]);
-        });
-        deezNutz.doughnutDataReceiver = helper;
-      } else {
-        let sql = `SELECT obcina_prejem AS obcina, receiver_status AS receiver, SUM(kol_kg) as kg FROM evl e WHERE DATE_PART('year', e.dat_oddaje) = '${this.year}' AND e.dat_prejem_zav IS NULL GROUP BY receiver, obcina;`;
-        query(sql).then(function (response) {
-          if (response === "Are you dumb?") console.log("You are dumb, sorry.");
-          else {
-            deezNutz.receiverData = response;
-            let found = response.filter(
-              (x) => x.obcina == deezNutz.regionClicked
-            );
-            let helper = [];
-            found.forEach((el) => {
-              helper.push([el.receiver, parseFloat(el.kg)]);
-            });
-            deezNutz.doughnutDataReceiver = helper;
-          }
-        });
-      }
       this.showGraph = true;
     },
     hideGraph() {
@@ -603,6 +687,7 @@ export default {
           return "ob" + d.properties.OB_MID;
         })
         .on("mouseover", function (ev, d) {
+          if (!deezNutz.finishedLoading) return;
           let overlay = document.getElementById("overlay-box");
           overlay.querySelector("span").innerHTML = d.properties.OB_UIME;
           overlay.getElementsByClassName("value")[0].innerHTML = "-";
@@ -746,7 +831,7 @@ html:not(.loaded) #cursor-container .dot {
   background-color: var(--bg-03-not-transparent);
 }
 #Overlay {
-  position: absolute;
+  position: fixed;
   width: 100%;
   height: 100%;
   top: 0;
@@ -757,5 +842,18 @@ html:not(.loaded) #cursor-container .dot {
   // background-color: var(--blur-color);
   -webkit-backdrop-filter: blur(55px);
   backdrop-filter: blur(5px);
+}
+#GraphBox div {
+  position: absolute;
+  padding: 0 4rem;
+  height: max-content;
+  max-height: 65%;
+}
+#GraphBox p {
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
 }
 </style>

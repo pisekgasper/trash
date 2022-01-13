@@ -108,12 +108,12 @@ ORDER BY st_evl DESC;
 /* IZVOZ 2021 */
     SELECT e.obcina_oddaja AS Obcina, SUM(e.kol_kg) as Kolicina 
     FROM evl e 
-    WHERE DATE_PART('year', e.dat_oddaje) = '2021' AND e.dat_prejem_zav IS NULL
+    WHERE DATE_PART('year', e.dat_oddaje) = '2021' AND e.dat_prejem_zav IS NOT NULL
     GROUP BY e.obcina_oddaja;
 /* UVOZ */ -- pri uvozu ignoriram zavrnjene
     SELECT e.obcina_prejem AS Obcina, SUM(e.kol_kg) as Kolicina 
     FROM evl e 
-    WHERE DATE_PART('year', e.dat_oddaje) = '2021' AND e.dat_prejem_zav IS NULL
+    WHERE DATE_PART('year', e.dat_oddaje) = '2021' AND e.dat_prejem_zav IS NOT NULL
     GROUP BY e.obcina_prejem;
 
 -- status sender in receiver po obcinah
@@ -129,3 +129,16 @@ GROUP BY receiver, obcina;
 
 -- kolicina po letih po mesecih
 SELECT DATE_PART('year', dat_oddaje) as year, DATE_PART('month', dat_oddaje) as month, sum(kol_kg) from evl GROUP BY year, month;
+
+-- za obcino kolicina po mescih
+-- UVOZ
+SELECT obcina_prejem obcina, DATE_PART('month', dat_oddaje) AS mesec, sum(kol_kg)
+FROM evl 
+WHERE DATE_PART('year', dat_oddaje) = '2021' AND dat_prejem_zav IS NOT NULL
+GROUP BY obcina, mesec ORDER BY obcina, mesec;
+
+-- IZVOZ
+SELECT obcina_oddaja obcina, DATE_PART('month', dat_oddaje) AS mesec, sum(kol_kg)
+FROM evl 
+WHERE DATE_PART('year', dat_oddaje) = '2021' AND dat_prejem_zav IS NOT NULL
+GROUP BY obcina, mesec ORDER BY obcina, mesec;

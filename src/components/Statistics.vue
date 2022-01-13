@@ -11,7 +11,11 @@
     </div>
     <div class="chart2">
       <h1>PET NAJBOLJ POGOSTIH POSTOPKOV</h1>
-      <column-chart :legend="true" :colors="[chartColor]" :data="process"></column-chart>
+      <column-chart
+        :legend="true"
+        :colors="[chartColor]"
+        :data="process"
+      ></column-chart>
     </div>
     <div class="chart3"></div>
     <div class="chart4"></div>
@@ -28,20 +32,8 @@ export default {
       process: null,
       chartColor: "#3421FF",
       stackedColorsB: true,
-      colorsDark: [
-        "#89c0b6",
-        "#63a6a0",
-        "#448c8a",
-        "#287274",
-        "#0d585f",
-      ],
-      colorsLight: [
-        "#d1afe8",
-        "#b998dd",
-        "#9f82ce",
-        "#826dba",
-        "#63589f",
-      ],
+      colorsDark: ["#89c0b6", "#63a6a0", "#448c8a", "#287274", "#0d585f"],
+      colorsLight: ["#d1afe8", "#b998dd", "#9f82ce", "#826dba", "#63589f"],
     };
   },
   methods: {
@@ -79,7 +71,7 @@ export default {
           ["2017", "2018", "2019", "2020", "2021"].forEach((key, index) => {
             console.log(key);
             var builder = {};
-            var color_help = '#fff';
+            var color_help = "#fff";
             for (let i = 0; i < 12; i++) {
               if (helper[key][i]) {
                 builder[months_slo[i + 1]] = helper[key][i].weight / 1000000;
@@ -92,7 +84,7 @@ export default {
             this.weight_Y.push({
               name: key,
               data: builder,
-              color: color_help
+              color: color_help,
             });
           });
           console.log(this.weight_Y);
@@ -124,26 +116,26 @@ export default {
         });
     },
     changeData2() {
-      var helper = []
-        this.weight_Y.forEach((e, index) => {
-            console.log(index)
-            console.log(this.stackedColorsB)
-            if (this.stackedColorsB == "true") {
-                var colorHelper = this.colorsLight[index]
-            } else {
-                colorHelper = this.colorsDark[index]
-            }
-            console.log(colorHelper);
-            helper.push({
-              name: e.name,
-              data: e.data,
-              color: colorHelper
-            });
+      var helper = [];
+      this.weight_Y.forEach((e, index) => {
+        console.log(index);
+        console.log(this.stackedColorsB);
+        if (this.stackedColorsB == "true") {
+          var colorHelper = this.colorsLight[index];
+        } else {
+          colorHelper = this.colorsDark[index];
+        }
+        console.log(colorHelper);
+        helper.push({
+          name: e.name,
+          data: e.data,
+          color: colorHelper,
         });
-        this.weight_Y = helper;
-        localStorage.weightForYears = JSON.stringify(this.weight_Y);
-        console.log(this.weight_Y)
-    }
+      });
+      this.weight_Y = helper;
+      localStorage.weightForYears = JSON.stringify(this.weight_Y);
+      console.log(this.weight_Y);
+    },
   },
   mounted() {
     this.chartColor = getComputedStyle(
@@ -159,7 +151,7 @@ export default {
           ).getPropertyValue("--accent");
         }, 100);
       });
-      
+
     if (localStorage.weightForYears) {
       this.weight_Y = JSON.parse(localStorage.weightForYears);
     } else {
@@ -192,14 +184,14 @@ export default {
 
 <style lang="sass" scoped>
 .four_charts
-    min-height: 100%
-    display: flex
-    flex-wrap: wrap
-    flex-direction: row
+  min-height: 100%
+  display: flex
+  flex-wrap: wrap
+  flex-direction: row
 
-    & > div
-        display: flex
-        flex-basis: calc(50% - 40px)
-        justify-content: center
-        flex-direction: column
+  & > div
+    display: flex
+    flex-basis: calc(50% - 40px)
+    justify-content: center
+    flex-direction: column
 </style>
