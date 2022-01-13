@@ -187,22 +187,15 @@ export default {
   min-height: 100%
   display: flex
   flex-wrap: wrap
-<<<<<<< HEAD
-  flex-direction: row
-=======
   flex-direction: column
->>>>>>> 49c5270a40db2cb31526d5ee934696d6661a8a4c
 
   & > div
     display: flex
     flex-basis: calc(50% - 40px)
     justify-content: center
     flex-direction: column
-<<<<<<< HEAD
-=======
-  padding-top: 2vh
+    padding-top: 2vh
 
   .chart1 .chart2
     padding-top: 1vh
->>>>>>> 49c5270a40db2cb31526d5ee934696d6661a8a4c
 </style>

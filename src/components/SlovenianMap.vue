@@ -34,8 +34,8 @@
       {{ regionClickedName }}
     </p>
     <column-chart
-      ytitle="Teža v Mt"
-      :sufix="'milijon ton'"
+      ytitle="Teža v kt (kilotona)"
+      :suffix="' kilo ton'"
       :colors="[borderFill]"
       :data="radioModel == 'import' ? chartDataReceiver : chartDataSender"
     ></column-chart>
@@ -503,7 +503,8 @@ export default {
           );
 
           found.forEach((el) => {
-            monthly_data[months_slo[parseInt(el.mesec)]] = parseInt(el.sum);
+            monthly_data[months_slo[parseInt(el.mesec)]] =
+              parseInt(el.sum) / 1000;
           });
           console.log(monthly_data);
           for (const [_, value] of Object.entries(months_slo)) {
@@ -525,7 +526,8 @@ export default {
               );
 
               found.forEach((el) => {
-                monthly_data[months_slo[parseInt(el.mesec)]] = parseInt(el.sum);
+                monthly_data[months_slo[parseInt(el.mesec)]] =
+                  parseInt(el.sum) / 1000;
               });
               console.log(monthly_data);
               for (const [_, value] of Object.entries(months_slo)) {
@@ -546,7 +548,8 @@ export default {
           );
 
           found.forEach((el) => {
-            monthly_data[months_slo[parseInt(el.mesec)]] = parseInt(el.sum);
+            monthly_data[months_slo[parseInt(el.mesec)]] =
+              parseInt(el.sum) / 1000;
           });
           console.log(monthly_data);
           for (const [_, value] of Object.entries(months_slo)) {
@@ -568,7 +571,8 @@ export default {
               );
 
               found.forEach((el) => {
-                monthly_data[months_slo[parseInt(el.mesec)]] = parseInt(el.sum);
+                monthly_data[months_slo[parseInt(el.mesec)]] =
+                  parseInt(el.sum) / 1000;
               });
               console.log(monthly_data);
               for (const [_, value] of Object.entries(months_slo)) {
