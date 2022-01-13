@@ -125,6 +125,7 @@ export default {
 }
 .form {
   display: inline-flex;
+  width: 100%;
 }
 select.waste_type {
   width: 100%;

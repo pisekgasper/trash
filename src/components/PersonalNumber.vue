@@ -69,7 +69,7 @@
     />
   </div>
   <div class="evl_list" v-if="loading || list">
-    <div class="close-list" v-if="list" @click="() => {list = false; loading = false; selected_sender = null}">&times;</div>
+    <div class="close-list" v-if="list" @click="() => {list = false; loading = false; selected_sender = null; selected_receiver = null;}">&times;</div>
     <p v-if="loading">Loading</p>
     <div class="offset">
       <div class="evls" v-if="list">
@@ -284,6 +284,7 @@ export default {
           console.log(e);
           this.loading = false;
         });
+        this.selected_receiver = null;
     },
     setPages() {
       this.pages = [];

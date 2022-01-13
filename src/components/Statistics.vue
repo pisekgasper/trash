@@ -6,19 +6,17 @@
         ytitle="Teža v Mt"
         :stacked="true"
         :data="weight_Y"
-        :sufix="'milijon ton'"
+        :suffix="' milijon ton'"
       ></column-chart>
     </div>
     <div class="chart2">
       <h1>PET NAJBOLJ POGOSTIH POSTOPKOV</h1>
       <column-chart
-        :legend="true"
+        :suffix="' milijon ton'"
         :colors="[chartColor]"
         :data="process"
       ></column-chart>
     </div>
-    <div class="chart3"></div>
-    <div class="chart4"></div>
   </div>
 </template>
 
@@ -66,7 +64,6 @@ export default {
           response.data.forEach((e) => {
             helper[e.year].push({ month: e.month, weight: e.weight });
           });
-          console.log(helper["2017"][0]);
           this.weight_Y = [];
           ["2017", "2018", "2019", "2020", "2021"].forEach((key, index) => {
             console.log(key);
@@ -74,7 +71,9 @@ export default {
             var color_help = "#fff";
             for (let i = 0; i < 12; i++) {
               if (helper[key][i]) {
-                builder[months_slo[i + 1]] = helper[key][i].weight / 1000000;
+                builder[months_slo[i + 1]] = parseInt(
+                  helper[key][i].weight / 1000000
+                );
               } else {
                 builder[months_slo[i + 1]] = 0;
               }
@@ -104,8 +103,9 @@ export default {
         .then((response) => {
           this.process = {};
           response.data.forEach((e) => {
-            this.process[e.predviden_postopek.toUpperCase()] =
-              e.weight / 1000000;
+            this.process[e.predviden_postopek.toUpperCase()] = parseInt(
+              e.weight / 1000000
+            );
           });
           console.log(this.process);
           localStorage.top_five_process = JSON.stringify(this.process);
@@ -187,11 +187,22 @@ export default {
   min-height: 100%
   display: flex
   flex-wrap: wrap
+<<<<<<< HEAD
   flex-direction: row
+=======
+  flex-direction: column
+>>>>>>> 49c5270a40db2cb31526d5ee934696d6661a8a4c
 
   & > div
     display: flex
     flex-basis: calc(50% - 40px)
     justify-content: center
     flex-direction: column
+<<<<<<< HEAD
+=======
+  padding-top: 2vh
+
+  .chart1 .chart2
+    padding-top: 1vh
+>>>>>>> 49c5270a40db2cb31526d5ee934696d6661a8a4c
 </style>
